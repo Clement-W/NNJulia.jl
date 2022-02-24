@@ -32,11 +32,7 @@ end
 # the dot after activation is important to apply the function element-wise
 
 
-function Base.show(io::IO, l::Dense)
-    print(io, "Dense(", size(l.weight, 2), ", ", size(l.weight, 1))
-    print(io, ", ", l.activation)
-    print(io, ")")
-end
+
 
 function parameters(l::Dense)
     return [l.weight, l.bias]
