@@ -14,21 +14,21 @@ mutable struct Tensor{T<:Union{AbstractArray,Float64,Int64}} <: AbstractTensor
     gradient::T
     dependencies::Union{Vector{TensorDependency},Nothing}
     # main constructor
-    function Tensor{T}(data::T, gradient::T, dependencies::Union{Vector{TensorDependency},Nothing}) where {T<:Union{AbstractArray,Float64,Int64}}
+    function Tensor(data::T, gradient::T, dependencies::Union{Vector{TensorDependency},Nothing}) where {T<:Union{AbstractArray,Float64,Int64}}
         if (size(data) != size(gradient))
             throw(ErrorException("The gradient's size must be equal to the size of the data."))
         end
-        new(data, gradient, dependencies)
+        new{Union{AbstractArray,Float64,Int64}}(data, gradient, dependencies)
     end
 end
 
 # Aditional constructors
 function Tensor(data::T) where {T<:Union{AbstractArray,Float64,Int64}}
-    Tensor{Union{AbstractArray,Float64,Int64}}(data, zero(data), nothing)
+    Tensor(data, zero(data), nothing)
 end
 
 function Tensor(data::T, gradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
-    Tensor{Union{AbstractArray,Float64,Int64}}(data, gradient, nothing)
+    Tensor(data, gradient, nothing)
 end
 
 # customize the set property for t.data
