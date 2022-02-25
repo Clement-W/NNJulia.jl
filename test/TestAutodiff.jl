@@ -160,9 +160,32 @@ end
 
 @testset "Test element-wise addition between tensors" begin
     @testset "Broadcast element-wise addition that adds a dimension " begin
-
         t1 = Tensor([1 2 3; 4 5 6])
-        t2 = Tensor([2, 2, 2]')
+        t2 = Tensor(1)
+        t3 = t1 .+ t2
+
+        @test t1.data == [1 2 3; 4 5 6]
+        @test t2.data == 1
+        @test t3.data == [2 3 4; 5 6 7]
+        @test t1.gradient == [0 0 0; 0 0 0]
+        @test t2.gradient == 0
+        @test t3.gradient == [0 0 0; 0 0 0]
+        @test size(t3.dependencies) == (2,)
+        @test t1.dependencies === nothing
+        @test t2.dependencies === nothing
+        @test size(t3) == (2, 3)
+
+        backward!(t3, [1 1 1; 2 2 2])
+
+
+        @test t3.gradient == [1 1 1; 2 2 2]
+        @test t2.gradient == 9
+        @test t1.gradient == [1 1 1; 2 2 2]
+    end
+
+    @testset "Broadcast element-wise addition with no dimensions added " begin
+        t1 = Tensor([1 2 3; 4 5 6])
+        t2 = Tensor([2 2 2])
         t3 = t1 .+ t2
 
         @test t1.data == [1 2 3; 4 5 6]
@@ -182,6 +205,5 @@ end
         @test t3.gradient == [1 1 1; 2 2 2]
         @test t2.gradient == [3 3 3]
         @test t1.gradient == [1 1 1; 2 2 2]
-
     end
 end

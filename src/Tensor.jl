@@ -145,7 +145,6 @@ end
 
 # Used to support gradient computation with broadcast operations made with element-wise operators such as .+
 function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
-
     #=
     First, sum out the dims added by the broadcast operation, so that the gradient
     has the same dimensions of the tensor
@@ -158,6 +157,11 @@ function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArra
     for _ = 1:nbDimsAdded
         # sum the first axis, and remove the additional dimension
         gradient = dropdims(sum(gradient, dims = 1), dims = 1)
+        if (size(gradient) == ())
+            # if the gradient is a one element array, convert it to a scalar
+            gradient = gradient[1]
+        end
+
     end
 
     #=
