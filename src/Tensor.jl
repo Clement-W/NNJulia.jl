@@ -71,7 +71,8 @@ function Base.show(io::IO, t::Tensor)
     show(t.gradient)
 end
 
-
+# Backpropagate a gradient through the auto differenciation graph by
+# recurcively calling this method on the tensor dependencies.
 function backward!(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) where {T<:Union{AbstractArray,Float64,Int64}}
 
     if (incomingGradient === nothing)
@@ -99,6 +100,7 @@ function backward!(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) wher
 
 end
 
+# Return the sum of the tensor's elements
 function Base.sum(t::Tensor)
 
     # Function used to compute the gradient of t
@@ -119,7 +121,7 @@ function Base.sum(t::Tensor)
     return Tensor(data, dependencies)
 end
 
-
+# + operator for tensors to support addition between 2 tensors
 function Base.:+(t1::Tensor, t2::Tensor)
 
     function gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
@@ -210,6 +212,71 @@ function Base.:broadcasted(::typeof(+), t1::Tensor, t2::Tensor)
 end
 
 
+# - operator for tensors to support substraction between 2 tensors
+function Base.:-(t1::Tensor, t2::Tensor)
+
+    function gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
+        #=
+        d(t1-t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
+        =#
+        return incomingGradient
+    end
+
+    function gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
+        #=
+        d(t1-t2)/d(t2) = -1, so we just need to multiply the incoming gradient by -1.
+        =#
+        return -incomingGradient
+    end
+
+    data = t1.data - t2.data
+    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+
+    return Tensor(data, dependencies)
+end #TODO: TEST
+
+
+# - operator for tensors to negate a tensor
+function Base.:-(t1::Tensor)
+
+    function gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
+        #=
+        d(-t1)/d(t1) = -1, so we just need to multiply the incoming gradient by 1.
+        =#
+        return -incomingGradient
+    end
+
+    data = -t1.data
+    dependencies = [TensorDependency(t1, gradientFunctionT1)]
+
+    return Tensor(data, dependencies)
+end #TODO: TEST
+
+
+
+# Element-wise substraction (perform broadcast operation)
+function Base.:broadcasted(::typeof(-), t1::Tensor, t2::Tensor)
+    function gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
+        #=
+        d(t1-t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
+        also supports broadcasting
+        =#
+        return handleBroadcasting(t1, incomingGradient)
+    end
+
+    function gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
+        #=
+        d(t1-t2)/d(t2) = -1, so we just need to multiply the incoming gradient by -1.
+        also supports broadcasting
+        =#
+        return handleBroadcasting(t2, -incomingGradient)
+    end
+
+    data = t1.data .- t2.data
+    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+
+    return Tensor(data, dependencies)
+end #TODO: TEST
 
 
 
