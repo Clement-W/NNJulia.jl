@@ -59,6 +59,14 @@ end
     @test size(t1) == (2, 3)
 end
 
+@testset "Tensor ndims" begin
+    t = Tensor(rand(3, 3, 3))
+    @test ndims(t) == 3
+
+    t1 = Tensor(3)
+    @test ndims(t1) == 0
+end
+
 @testset "Test zero_grad" begin
     t = Tensor(3, 1)
     @test t.gradient == 1
@@ -69,4 +77,11 @@ end
     @test t1.gradient == [1 1 1; 5 5 5]
     zero_grad!(t1)
     @test t1.gradient == [0 0 0; 0 0 0]
+end
+
+@testset "Simple Backward" begin
+    t = Tensor([2, 2, 2])
+    @test t.gradient == [0, 0, 0]
+    backward(t, [5, 5, 5])
+    @test t.gradient == [5, 5, 5]
 end

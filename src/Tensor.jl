@@ -2,8 +2,8 @@
 abstract type AbstractTensor end
 
 struct TensorDependency
-    TensorDep::AbstractTensor
-    GradFunction::Function
+    tensorDep::AbstractTensor
+    gradFunction::Function
 end
 
 
@@ -34,7 +34,7 @@ end
 # customize the set property for t.data
 function Base.setproperty!(t::Tensor, prop::Symbol, val)
     if (prop == :data)
-        # Invalidate the gradient if the data is set mannualy
+        # Reset the gradient to 0 if the data is set mannualy
         t.gradient = zero(t.data)
         setfield!(t, :data, val)
     else
@@ -45,6 +45,11 @@ end
 # return the size of the data
 function Base.size(t::Tensor)
     return size(t.data)
+end
+
+# return the number of dims of the data
+function Base.ndims(t::Tensor)
+    return ndims(t.data)
 end
 
 # set the gradient to 0 
@@ -60,6 +65,34 @@ function Base.show(io::IO, t::Tensor)
     println()
     print(io, "grad : ")
     show(t.gradient)
+end
+
+
+function backward(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) where {T<:Union{AbstractArray,Float64,Int64}}
+
+    if (incomingGradient === nothing)
+        # If the tensor is a scalar, and no incoming gradient is provided, then set it to 1
+        if (ndims(t)) == 0
+            incomingGradient = 1
+        else
+            throw(ErrorException("Incoming gradient must be specified for non-scalar tensors"))
+        end
+    end
+
+    # Add the incoming gradient to the current tensor gradient (initially set to 0)
+    # Adding the incoming gradient allow gradient accumulation
+    t.gradient += incomingGradient
+
+    # Loop recursively into each dependencies of the current tensor to go through the whole graph
+    if (t.dependencies !== nothing)
+        for dep::TensorDependency in t.dependencies
+            backwardGrad = dep.gradFunction(incomingGradient)
+            dep.tensorDep.backward(backwardGrad)
+        end
+    end
+
+
+
 end
 
 
