@@ -31,6 +31,10 @@ function Tensor(data::T, gradient::T) where {T<:Union{AbstractArray,Float64,Int6
     Tensor(data, gradient, nothing)
 end
 
+function Tensor(data::T, dependencies::Union{Vector{TensorDependency},Nothing}) where {T<:Union{AbstractArray,Float64,Int64}}
+    Tensor(data, zero(data), dependencies)
+end
+
 # customize the set property for t.data
 function Base.setproperty!(t::Tensor, prop::Symbol, val)
     if (prop == :data)
@@ -86,14 +90,33 @@ function backward(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) where
     # Loop recursively into each dependencies of the current tensor to go through the whole graph
     if (t.dependencies !== nothing)
         for dep::TensorDependency in t.dependencies
+            # compute the gradient of the dependency wrt to this tensor
             backwardGrad = dep.gradFunction(incomingGradient)
-            dep.tensorDep.backward(backwardGrad)
+            # backward this gradient to the dependency
+            backward(dep.tensorDep, backwardGrad)
         end
     end
 
-
-
 end
 
+function Base.sum(t::Tensor)
+
+    function gradientFunction(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
+        #=
+        incomingGradient is a one element tensor, because the output of the sum is a 
+        one element tensor. In the sum function, each element has the same weight 
+        (1*x1 + 1*x2 + ... + 1*xn), so the gradient of this tensor wrt to the sum tensor
+        is a tensor composed of ones, with the shape of the original tensor.
+        d(grad)/d(thisTensor) = d(grad)/d(sum) * d(sum)/d(thisTensor) = grad * (1,1,1,...)
+        =#
+        return incomingGradient * ones(size(t.data))
+    end
+
+    data = sum(t.data)
+    dependencies = [TensorDependency(t, gradientFunction)]
+
+    return Tensor(data, dependencies)
+
+end
 
 

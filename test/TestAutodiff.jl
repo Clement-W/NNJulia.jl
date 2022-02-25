@@ -37,6 +37,14 @@ using Test
         @test t1.gradient == [0 0; 0 0]
         @test t1.dependencies === nothing
     end
+
+    @testset "Constructor raking data and TensorDependency in argument" begin
+        dep = [TensorDependency(Tensor([3, 3]), () -> ())]
+        t = Tensor([2, 2], dep)
+        @test t.data == [2, 2]
+        @test t.gradient == [0, 0]
+        @test t.dependencies == dep
+    end
 end
 
 @testset "Set Tensor property" begin
@@ -84,4 +92,24 @@ end
     @test t.gradient == [0, 0, 0]
     backward(t, [5, 5, 5])
     @test t.gradient == [5, 5, 5]
+
+end
+
+@testset "Tensor sum" begin
+    t1 = Tensor([1, 2, 3])
+    t2 = sum(t1)
+
+    backward(t2)
+    @test t1.data == [1, 2, 3]
+    @test t2.data == 6
+
+    @test t1.gradient == [1, 1, 1]
+    @test t2.gradient == 1
+
+    zero_grad!(t1)
+    zero_grad!(t2)
+
+    backward(t2, -10)
+    @test t1.gradient == [-10, -10, -10]
+    @test t2.gradient == -10
 end
