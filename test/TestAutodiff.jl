@@ -239,7 +239,7 @@ end
 
     end
 
-    @testset "Simple unary addition" begin
+    @testset "Simple unary substraction" begin
         t1 = Tensor([1, 2, 3])
         t2 = Tensor([2, 2, 2])
         t3 = t1 - t2
@@ -323,3 +323,65 @@ end
     end
 end
 
+
+@testset "Test * operator" begin
+    @testset "Test matrix multiplication" begin
+        t1 = Tensor([1 2; 3 4; 5 6])
+        t2 = Tensor([10, 20])
+
+        t3 = t1 * t2
+        @test size(t3) == (3,)
+        @test t3.data == [50, 110, 170]
+
+        backward!(t3, [-1, -2, -3])
+
+        @test t3.gradient == [-1, -2, -3]
+        @test t2.gradient == [-22, -28]
+        @test t1.gradient == [-10 -20; -20 -40; -30 -60]
+
+    end
+
+    @testset "Test element-wise multiplication" begin
+        t1 = Tensor([1, 2, 3])
+        t2 = Tensor([4, 5, 6])
+        t3 = t1 .* t2
+
+        @test size(t3) == (3,)
+        @test t3.data == [4, 10, 18]
+
+        backward!(t3, [10, 20, 30])
+
+        @test t3.gradient == [10, 20, 30]
+        @test t1.gradient == [40, 100, 180]
+        @test t2.gradient == [10, 40, 90]
+    end
+
+    @testset "Broadcast element-wise multiplication" begin
+        @testset "Broadcast adding a dimension" begin
+            t1 = Tensor([1 2 3; 4 5 6])
+            t2 = Tensor(2)
+
+            t3 = t1 .* t2
+            @test t3.data == [2 4 6; 8 10 12]
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+            @test t1.gradient == [2 2 2; 4 4 4]
+            @test t2.gradient == 36 # 9 + 12 +15
+        end
+
+        @testset "Broadcast with no dimension added" begin
+            t1 = Tensor([1 2 3; 4 5 6])
+            t2 = Tensor([7 8 9])
+
+            t3 = t1 .* t2
+            @test t3.data == [7 16 27; 28 40 54]
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+            @test t1.gradient == [7 8 9; 14 16 18]
+            @test t2.gradient == [9 12 15]
+        end
+    end
+
+end

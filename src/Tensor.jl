@@ -244,6 +244,56 @@ function Base.:broadcasted(::typeof(-), t1::Tensor, t2::Tensor)
 end
 
 
+# * operator for tensors to support multiplication and matrix multiplication between 2 tensors
+function Base.:*(t1::Tensor, t2::Tensor)
+
+    # Function used to compute the gradient of t1 :
+    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient * t2.data'
+    #= With t1 (n1,m1), t2 (m1,m2) and t3 = t1 * t2 is (n1,m2)
+    So the incoming gradient wrt t3 is (n1,m2)
+    d(t1*t2)/d(t1) = t2
+    So we just need to matmul the incoming gradient by t2. But t2 is (m1,m2)
+    and the incoming gradient is (n1,m2). So we need to do grad @ t2.Transpose
+    # This also works for scalars.
+    =#
+
+
+    # Function used to compute the gradient of t2 :
+    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1.data' * incomingGradient
+    #=
+    d(t1*t2)/d(t2) = t1
+    So we just need to matmul the incoming gradient by t1. But t1 is (n1,m1 )
+    and the incoming gradient is (n1,m2). So we need to do t1.Transpose * grad
+    =#
+
+    data = t1.data * t2.data
+    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+
+    return Tensor(data, dependencies)
+end
+
+# Element-wise multiplication (perform broadcast operation)
+function Base.:broadcasted(::typeof(*), t1::Tensor, t2::Tensor)
+
+    # Function used to compute the gradient of t1 :
+    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, t2.data .* incomingGradient)
+    # d(t1*t2)/d(t1) = t2, so we just need to multiply the incoming gradient by t2. (also supports broadcasting)
+
+
+    # Function used to compute the gradient of t2 :
+    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, t1.data .* incomingGradient)
+    # d(t1*t2)/d(t2) = t1, so we just need to multiply the incoming gradient by t1. (also supports broadcasting)
+
+    data = t1.data .* t2.data
+    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+
+    return Tensor(data, dependencies)
+end
+# TODO: test
+
+
+
+
 #=
 TODO:
 mult .* and * operator
