@@ -385,3 +385,48 @@ end
     end
 
 end
+
+
+@testset "Test ./ operator " begin
+    @testset "Element-wise true division" begin
+        t1 = Tensor([1 2 3])
+        t2 = Tensor([2 2 2])
+        t3 = t1 ./ t2
+
+        @test t3.data == [0.5 1 1.5]
+
+        backward!(t3, [10 20 30])
+
+        @test t3.gradient == [10 20 30]
+        @test t1.gradient == [5 10 15]
+        @test t2.gradient == [-2.5 -10 -22.5]
+    end
+    @testset "Broadcast element-wise true division" begin
+        @testset "Broadcast adding a dimension" begin
+            t1 = Tensor([1 2 3; 4 5 6])
+            t2 = Tensor(2)
+
+            t3 = t1 ./ t2
+            @test t3.data == [0.5 1 1.5; 2 2.5 3]
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+            @test t3.gradient == [1 1 1; 2 2 2]
+            @test t1.gradient == [0.5 0.5 0.5; 1 1 1]
+            @test t2.gradient == -9
+        end
+
+        @testset "Broadcast with no dimension added" begin
+            t1 = Tensor([2 4 6; 8 10 12])
+            t2 = Tensor([2 2 2])
+
+            t3 = t1 ./ t2
+            @test t3.data == [1 2 3; 4 5 6]
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+            @test t1.gradient == [0.5 0.5 0.5; 1 1 1]
+            @test t2.gradient == [-4.5 -6 -7.5]
+        end
+    end
+end

@@ -289,20 +289,41 @@ function Base.:broadcasted(::typeof(*), t1::Tensor, t2::Tensor)
 
     return Tensor(data, dependencies)
 end
-# TODO: test
+
+
+
+# Element-wise true division (perform broadcast operation)
+function Base.:broadcasted(::typeof(/), t1::Tensor, t2::Tensor)
+
+    # Function used to compute the gradient of t1 :
+    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, incomingGradient .* 1 ./ t2.data)
+
+
+    # Function used to compute the gradient of t2 :
+    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, (-t1.data ./ t2.data .^ 2) .* incomingGradient)
+    #d(t1/t2)/d(t2) = -t1/t2^2, so we just need to multiply the incoming gradient by -t1/t2^2.
+
+    data = t1.data ./ t2.data
+    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+
+    return Tensor(data, dependencies)
+end
+
+
+
+
+
 
 
 
 
 #=
 TODO:
-mult .* and * operator
-matmul * operator (use muladd ?)
-div / operator
 log operator
 pow operator
 sin,cos,tan,tanh ?
 slice function
+muladd ?
 =#
 
 
