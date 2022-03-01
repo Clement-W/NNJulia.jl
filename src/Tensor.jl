@@ -46,6 +46,7 @@ Base.size(t::Tensor) = size(t.data)
 # return the number of dims of the data
 Base.ndims(t::Tensor{Union{Float64,Int64,AbstractArray}}) = ndims(t.data)
 
+# return the length of the tensor
 Base.length(t::Tensor{Union{Float64,Int64,AbstractArray}}) = length(t.data)
 
 
@@ -112,25 +113,6 @@ function Base.sum(t::Tensor)
     return Tensor(data, dependencies)
 end
 
-# + operator for tensors to support addition between 2 tensors
-function Base.:+(t1::Tensor, t2::Tensor)
-
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
-    # d(t1+t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
-    # d(t1+t2)/d(t2) = 1, so we just need to multiply the incoming gradient by 1.
-
-
-    data = t1.data + t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
-
-    return Tensor(data, dependencies)
-end
-
 
 # Used to support gradient computation with broadcast operations made with element-wise operators such as .+
 function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
@@ -173,8 +155,29 @@ function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArra
 end
 
 
+# + operator for tensors to support addition between 2 tensors
+function Base.:+(t1::Tensor, t2::Tensor)
+
+    # Function used to compute the gradient of t1 :
+    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
+    # d(t1+t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
+
+
+    # Function used to compute the gradient of t2 :
+    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
+    # d(t1+t2)/d(t2) = 1, so we just need to multiply the incoming gradient by 1.
+
+    data = t1.data + t2.data
+    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+
+    return Tensor(data, dependencies)
+end
+
+#TODO: test these operator overload :
+Base.:+(t1::Tensor, notATensor::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1 + Tensor(notATensor)
+Base.:+(notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) + t1
+
 # Element-wise addition (perform broadcast operation)
-# TODO: implement inplace broadcast operation https://docs.julialang.org/en/v1/manual/interfaces/#man-interfaces-broadcasting-1
 function Base.:broadcasted(::typeof(+), t1::Tensor, t2::Tensor)
 
     # Function used to compute the gradient of t1 :
@@ -192,6 +195,8 @@ function Base.:broadcasted(::typeof(+), t1::Tensor, t2::Tensor)
     return Tensor(data, dependencies)
 end
 
+Base.:broadcasted(::typeof(+), t1::Tensor, notATensor::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1 .+ Tensor(notATensor)
+Base.:broadcasted(::typeof(+), notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) .+ t1
 
 # - operator for tensors to support substraction between 2 tensors
 function Base.:-(t1::Tensor, t2::Tensor)
@@ -211,6 +216,9 @@ function Base.:-(t1::Tensor, t2::Tensor)
     return Tensor(data, dependencies)
 end
 
+Base.:-(t1::Tensor, notATensor::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1 - Tensor(notATensor)
+Base.:-(notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) - t1
+
 
 # - operator for tensors to negate a tensor
 function Base.:-(t1::Tensor)
@@ -224,8 +232,6 @@ function Base.:-(t1::Tensor)
 
     return Tensor(data, dependencies)
 end
-
-
 
 # Element-wise substraction (perform broadcast operation)
 function Base.:broadcasted(::typeof(-), t1::Tensor, t2::Tensor)
@@ -245,6 +251,8 @@ function Base.:broadcasted(::typeof(-), t1::Tensor, t2::Tensor)
     return Tensor(data, dependencies)
 end
 
+Base.:broadcasted(::typeof(-), t1::Tensor, notATensor::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1 .- Tensor(notATensor)
+Base.:broadcasted(::typeof(-), notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) .- t1
 
 # * operator for tensors to support multiplication and matrix multiplication between 2 tensors
 function Base.:*(t1::Tensor, t2::Tensor)
@@ -274,6 +282,10 @@ function Base.:*(t1::Tensor, t2::Tensor)
     return Tensor(data, dependencies)
 end
 
+Base.:*(t1::Tensor, notATensor::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1 * Tensor(notATensor)
+Base.:*(notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) * t1
+
+
 # Element-wise multiplication (perform broadcast operation)
 function Base.:broadcasted(::typeof(*), t1::Tensor, t2::Tensor)
 
@@ -292,6 +304,8 @@ function Base.:broadcasted(::typeof(*), t1::Tensor, t2::Tensor)
     return Tensor(data, dependencies)
 end
 
+Base.:broadcasted(::typeof(*), t1::Tensor, notATensor::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1 .* Tensor(notATensor)
+Base.:broadcasted(::typeof(*), notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) .* t1
 
 
 # Element-wise true division (perform broadcast operation)
@@ -311,6 +325,9 @@ function Base.:broadcasted(::typeof(/), t1::Tensor, t2::Tensor)
     return Tensor(data, dependencies)
 end
 
+Base.:broadcasted(::typeof(/), t1::Tensor, notATensor::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1 ./ Tensor(notATensor)
+Base.:broadcasted(::typeof(/), notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) ./ t1
+
 
 # log operator to perform element-wise neperian logarithm on a tensor
 function Base.:log(t1::Tensor)
@@ -327,15 +344,13 @@ end
 
 
 
-
-
-
 #=
 TODO:
-log operator
+indexer and slice operator
+
 pow operator
 sin,cos,tan,tanh ?
-slice function
+
 muladd ?
 =#
 
