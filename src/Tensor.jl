@@ -46,6 +46,8 @@ Base.size(t::Tensor) = size(t.data)
 # return the number of dims of the data
 Base.ndims(t::Tensor{Union{Float64,Int64,AbstractArray}}) = ndims(t.data)
 
+Base.length(t::Tensor{Union{Float64,Int64,AbstractArray}}) = length(t.data)
+
 
 # set the gradient to 0 
 function zero_grad!(t::Tensor)
@@ -310,7 +312,18 @@ function Base.:broadcasted(::typeof(/), t1::Tensor, t2::Tensor)
 end
 
 
+# log operator to perform element-wise neperian logarithm on a tensor
+function Base.:log(t1::Tensor)
 
+    # Function used to compute the gradient of t1 :
+    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient .* (1 ./ t1.data)
+    # d(ln(t1))/d(t1) = 1/t1, so we just need to multiply the incoming gradient by 1/t1.
+
+    data = log.(t1.data)
+    dependencies = [TensorDependency(t1, gradientFunctionT1)]
+
+    return Tensor(data, dependencies)
+end
 
 
 

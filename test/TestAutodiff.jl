@@ -430,3 +430,15 @@ end
         end
     end
 end
+
+
+@testset "Test log operator " begin
+    t1 = Tensor([1 2 3])
+
+    t3 = log(t1)
+    @test t3.data == [log(1) log(2) log(3)]
+
+    backward!(t3, [2 2 2])
+
+    @test t1.gradient == [2 1 2 / 3]
+end
