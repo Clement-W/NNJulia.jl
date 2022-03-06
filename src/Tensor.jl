@@ -11,28 +11,41 @@ end
 # To improve performances, it would be better to use concrete types for AbstractArray ({Union{Float64,Int64}})
 mutable struct Tensor{T<:Union{AbstractArray,Float64,Int64}} <: AbstractTensor
     data::T
-    gradient::T
+    gradient::Union{T,Nothing}
     dependencies::Union{Vector{TensorDependency},Nothing}
+    requires_grad::Bool
     # main constructor
-    function Tensor(data::T, gradient::T, dependencies::Union{Vector{TensorDependency},Nothing}) where {T<:Union{AbstractArray,Float64,Int64}}
-        if (size(data) != size(gradient))
-            throw(ErrorException("The gradient's size must be equal to the size of the data."))
+    function Tensor(data::T, gradient::Union{T,Nothing}, dependencies::Union{Vector{TensorDependency},Nothing}, requires_grad::Bool) where {T<:Union{AbstractArray,Float64,Int64}}
+        if (requires_grad)
+            if (size(data) != size(gradient))
+                throw(ErrorException("The gradient's size must be equal to the size of the data."))
+            end
+        else
+            if (gradient !== nothing || dependencies !== nothing)
+                throw(ErrorException("The tensor can't have a gradient or dependencies if requires_grad is false."))
+            end
         end
-        new{Union{AbstractArray,Float64,Int64}}(data, gradient, dependencies)
+        new{Union{AbstractArray,Float64,Int64}}(data, gradient, dependencies, requires_grad)
     end
 end
 
 # Aditional constructors
-Tensor(data::T) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, zero(data), nothing)
+Tensor(data::T, requires_grad::Bool = false) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, (requires_grad != false) ? zero(data) : nothing, nothing, requires_grad)
+# if requires_grad is true, the gradient is set to zero, else it is set to nothing
 
-Tensor(data::T, gradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, gradient, nothing)
+Tensor(data::T, gradient::Union{T,Nothing}) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, gradient, nothing, gradient !== nothing)
+# if gradient == nothing, requires_grad is set to false, else it is set to true
 
-Tensor(data::T, dependencies::Union{Vector{TensorDependency},Nothing}) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, zero(data), dependencies)
+Tensor(data::T, dependencies::Union{Vector{TensorDependency},Nothing}) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, (dependencies !== nothing) ? zero(data) : nothing, dependencies, dependencies !== nothing)
+# if dependencies == nothing, requires_grad is set to false and gradient is set to nothing, else it is set to true
 
 # customize the set property for t.data
 function Base.setproperty!(t::Tensor, prop::Symbol, val)
     if (prop == :data)
         # Reset the gradient to 0 if the data is set mannualy
+        if (t.requires_grad == false)
+            throw(ErrorException("Can't change the gradient of a tensor with requires_grad = false"))
+        end
         t.gradient = zero(t.data)
         setfield!(t, :data, val)
     else
@@ -52,6 +65,9 @@ Base.length(t::Tensor{Union{Float64,Int64,AbstractArray}}) = length(t.data)
 
 # set the gradient to 0 
 function zero_grad!(t::Tensor)
+    if (t.requires_grad == false)
+        throw(ErrorException("Can't call zero_grad on a tensor with requires_grad = false"))
+    end
     t.gradient = zero(t.data)
 end
 
@@ -68,6 +84,10 @@ end
 # Backpropagate a gradient through the auto differenciation graph by
 # recurcively calling this method on the tensor dependencies.
 function backward!(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) where {T<:Union{AbstractArray,Float64,Int64}}
+
+    if (t.requires_grad == false)
+        throw(ErrorException("Can't call backward on a tensor that don't requires gradient"))
+    end
 
     if (incomingGradient === nothing)
         # If the tensor is a scalar, and no incoming gradient is provided, then set it to 1
@@ -97,18 +117,24 @@ end
 # Return the sum of the tensor's elements
 function Base.sum(t::Tensor)
 
-    # Function used to compute the gradient of t :
-    gradientFunction(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient * ones(size(t.data))
-    #=
-    incomingGradient is a one element tensor, because the output of the sum is a 
-    one element tensor. In the sum function, each element has the same weight 
-    (1*x1 + 1*x2 + ... + 1*xn), so the gradient of this tensor wrt to the sum tensor
-    is a tensor composed of ones, with the shape of the original tensor.
-    d(grad)/d(thisTensor) = d(grad)/d(sum) * d(sum)/d(thisTensor) = grad * (1,1,1,...)
-    =#
-
     data = sum(t.data)
-    dependencies = [TensorDependency(t, gradientFunction)]
+
+    if (t.requires_grad)
+
+        # Function used to compute the gradient of t :
+        gradientFunction(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient * ones(size(t.data))
+        #=
+        incomingGradient is a one element tensor, because the output of the sum is a 
+        one element tensor. In the sum function, each element has the same weight 
+        (1*x1 + 1*x2 + ... + 1*xn), so the gradient of this tensor wrt to the sum tensor
+        is a tensor composed of ones, with the shape of the original tensor.
+        d(grad)/d(thisTensor) = d(grad)/d(sum) * d(sum)/d(thisTensor) = grad * (1,1,1,...)
+        =#
+
+        dependencies = [TensorDependency(t, gradientFunction)]
+    else
+        dependencies = nothing
+    end
 
     return Tensor(data, dependencies)
 end
@@ -158,17 +184,24 @@ end
 # + operator for tensors to support addition between 2 tensors
 function Base.:+(t1::Tensor, t2::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
-    # d(t1+t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
-    # d(t1+t2)/d(t2) = 1, so we just need to multiply the incoming gradient by 1.
-
     data = t1.data + t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+    # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
+    dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
+        # d(t1+t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
+        push!(dependencies, TensorDependency(t1, gradientFunctionT1))
+    end
+
+    if (t2.requires_grad)
+        # Function used to compute the gradient of t2 :
+        gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
+        # d(t1+t2)/d(t2) = 1, so we just need to multiply the incoming gradient by 1.
+        push!(dependencies, TensorDependency(t2, gradientFunctionT2))
+    end
+
 
     return Tensor(data, dependencies)
 end
@@ -180,17 +213,23 @@ Base.:+(notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}}
 # Element-wise addition (perform broadcast operation)
 function Base.:broadcasted(::typeof(+), t1::Tensor, t2::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, incomingGradient)
-    # d(t1+t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1. (also supports broadcasting)
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, incomingGradient)
-    # d(t1+t2)/d(t2) = 1, so we just need to multiply the incoming gradient by 1. (also supports broadcasting)
-
     data = t1.data .+ t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+    # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
+    dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, incomingGradient)
+        # d(t1+t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1. (also supports broadcasting)
+        push!(dependencies, TensorDependency(t1, gradientFunctionT1))
+    end
+
+    if (t2.requires_grad)
+        # Function used to compute the gradient of t2 :
+        gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, incomingGradient)
+        # d(t1+t2)/d(t2) = 1, so we just need to multiply the incoming gradient by 1. (also supports broadcasting)
+        push!(dependencies, TensorDependency(t2, gradientFunctionT2))
+    end
 
     return Tensor(data, dependencies)
 end
@@ -201,17 +240,23 @@ Base.:broadcasted(::typeof(+), notATensor::T, t1::Tensor) where {T<:Union{Abstra
 # - operator for tensors to support substraction between 2 tensors
 function Base.:-(t1::Tensor, t2::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
-    # d(t1-t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = -incomingGradient
-    # d(t1-t2)/d(t2) = -1, so we just need to multiply the incoming gradient by -1.
-
     data = t1.data - t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+    # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
+    dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient
+        # d(t1-t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1.
+        push!(dependencies, TensorDependency(t1, gradientFunctionT1))
+    end
+
+    if (t2.requires_grad)
+        # Function used to compute the gradient of t2 :
+        gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = -incomingGradient
+        # d(t1-t2)/d(t2) = -1, so we just need to multiply the incoming gradient by -1.
+        push!(dependencies, TensorDependency(t2, gradientFunctionT2))
+    end
 
     return Tensor(data, dependencies)
 end
@@ -223,12 +268,16 @@ Base.:-(notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}}
 # - operator for tensors to negate a tensor
 function Base.:-(t1::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = -incomingGradient
-    # d(-t1)/d(t1) = -1, so we just need to multiply the incoming gradient by 1.
-
     data = -t1.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1)]
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = -incomingGradient
+        # d(-t1)/d(t1) = -1, so we just need to multiply the incoming gradient by 1.
+        dependencies = [TensorDependency(t1, gradientFunctionT1)]
+    else
+        dependencies = nothing
+    end
 
     return Tensor(data, dependencies)
 end
@@ -236,17 +285,23 @@ end
 # Element-wise substraction (perform broadcast operation)
 function Base.:broadcasted(::typeof(-), t1::Tensor, t2::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, incomingGradient)
-    # d(t1-t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1. (also supports broadcasting)
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, -incomingGradient)
-    # d(t1-t2)/d(t2) = -1, so we just need to multiply the incoming gradient by -1. (also supports broadcasting)
-
     data = t1.data .- t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+    # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
+    dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, incomingGradient)
+        # d(t1-t2)/d(t1) = 1, so we just need to multiply the incoming gradient by 1. (also supports broadcasting)
+        push!(dependencies, TensorDependency(t1, gradientFunctionT1))
+    end
+
+    if (t2.requires_grad)
+        # Function used to compute the gradient of t2 :
+        gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, -incomingGradient)
+        # d(t1-t2)/d(t2) = -1, so we just need to multiply the incoming gradient by -1. (also supports broadcasting)
+        push!(dependencies, TensorDependency(t2, gradientFunctionT2))
+    end
 
     return Tensor(data, dependencies)
 end
@@ -257,27 +312,34 @@ Base.:broadcasted(::typeof(-), notATensor::T, t1::Tensor) where {T<:Union{Abstra
 # * operator for tensors to support multiplication and matrix multiplication between 2 tensors
 function Base.:*(t1::Tensor, t2::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient * t2.data'
-    #= With t1 (n1,m1), t2 (m1,m2) and t3 = t1 * t2 is (n1,m2)
-    So the incoming gradient wrt t3 is (n1,m2)
-    d(t1*t2)/d(t1) = t2
-    So we just need to matmul the incoming gradient by t2. But t2 is (m1,m2)
-    and the incoming gradient is (n1,m2). So we need to do grad @ t2.Transpose
-    # This also works for scalars.
-    =#
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1.data' * incomingGradient
-    #=
-    d(t1*t2)/d(t2) = t1
-    So we just need to matmul the incoming gradient by t1. But t1 is (n1,m1 )
-    and the incoming gradient is (n1,m2). So we need to do t1.Transpose * grad
-    =#
-
     data = t1.data * t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+    # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
+    dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient * t2.data'
+        #= With t1 (n1,m1), t2 (m1,m2) and t3 = t1 * t2 is (n1,m2)
+        So the incoming gradient wrt t3 is (n1,m2)
+        d(t1*t2)/d(t1) = t2
+        So we just need to matmul the incoming gradient by t2. But t2 is (m1,m2)
+        and the incoming gradient is (n1,m2). So we need to do grad * transpose(t2)
+        This also works for scalars.
+        =#
+        push!(dependencies, TensorDependency(t1, gradientFunctionT1))
+    end
+
+
+    if (t2.requires_grad)
+        # Function used to compute the gradient of t2 :
+        gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = t1.data' * incomingGradient
+        #=
+        d(t1*t2)/d(t2) = t1
+        So we just need to matmul the incoming gradient by t1. But t1 is (n1,m1 )
+        and the incoming gradient is (n1,m2). So we need to do t1.Transpose * grad
+        =#
+        push!(dependencies, TensorDependency(t2, gradientFunctionT2))
+    end
 
     return Tensor(data, dependencies)
 end
@@ -289,17 +351,23 @@ Base.:*(notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}}
 # Element-wise multiplication (perform broadcast operation)
 function Base.:broadcasted(::typeof(*), t1::Tensor, t2::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, t2.data .* incomingGradient)
-    # d(t1*t2)/d(t1) = t2, so we just need to multiply the incoming gradient by t2. (also supports broadcasting)
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, t1.data .* incomingGradient)
-    # d(t1*t2)/d(t2) = t1, so we just need to multiply the incoming gradient by t1. (also supports broadcasting)
-
     data = t1.data .* t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+    # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
+    dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, t2.data .* incomingGradient)
+        # d(t1*t2)/d(t1) = t2, so we just need to multiply the incoming gradient by t2. (also supports broadcasting)
+        push!(dependencies, TensorDependency(t1, gradientFunctionT1))
+    end
+
+    if (t2.requires_grad)
+        # Function used to compute the gradient of t2 :
+        gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, t1.data .* incomingGradient)
+        # d(t1*t2)/d(t2) = t1, so we just need to multiply the incoming gradient by t1. (also supports broadcasting)
+        push!(dependencies, TensorDependency(t2, gradientFunctionT2))
+    end
 
     return Tensor(data, dependencies)
 end
@@ -311,16 +379,22 @@ Base.:broadcasted(::typeof(*), notATensor::T, t1::Tensor) where {T<:Union{Abstra
 # Element-wise true division (perform broadcast operation)
 function Base.:broadcasted(::typeof(/), t1::Tensor, t2::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, incomingGradient .* 1 ./ t2.data)
-
-
-    # Function used to compute the gradient of t2 :
-    gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, (-t1.data ./ t2.data .^ 2) .* incomingGradient)
-    #d(t1/t2)/d(t2) = -t1/t2^2, so we just need to multiply the incoming gradient by -t1/t2^2.
-
     data = t1.data ./ t2.data
-    dependencies = [TensorDependency(t1, gradientFunctionT1), TensorDependency(t2, gradientFunctionT2)]
+    # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
+    dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t1, incomingGradient .* 1 ./ t2.data)
+        push!(dependencies, TensorDependency(t1, gradientFunctionT1))
+    end
+
+    if (t2.requires_grad)
+        # Function used to compute the gradient of t2 :
+        gradientFunctionT2(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handleBroadcasting(t2, (-t1.data ./ t2.data .^ 2) .* incomingGradient)
+        #d(t1/t2)/d(t2) = -t1/t2^2, so we just need to multiply the incoming gradient by -t1/t2^2.
+        push!(dependencies, TensorDependency(t2, gradientFunctionT2))
+    end
 
     return Tensor(data, dependencies)
 end
@@ -332,16 +406,19 @@ Base.:broadcasted(::typeof(/), notATensor::T, t1::Tensor) where {T<:Union{Abstra
 # log operator to perform element-wise neperian logarithm on a tensor
 function Base.:log(t1::Tensor)
 
-    # Function used to compute the gradient of t1 :
-    gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient .* (1 ./ t1.data)
-    # d(ln(t1))/d(t1) = 1/t1, so we just need to multiply the incoming gradient by 1/t1.
-
     data = log.(t1.data)
-    dependencies = [TensorDependency(t1, gradientFunctionT1)]
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient .* (1 ./ t1.data)
+        # d(ln(t1))/d(t1) = 1/t1, so we just need to multiply the incoming gradient by 1/t1.
+        dependencies = [TensorDependency(t1, gradientFunctionT1)]
+    else
+        dependencies = nothing
+    end
 
     return Tensor(data, dependencies)
 end
-
 
 
 
