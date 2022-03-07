@@ -29,8 +29,8 @@ function linear_regression()
 
         a.data -= lr * a.gradient
         b.data -= lr * b.gradient
+        # Change the data of the tensor
 
-        # ici a est un nouveau tensor à chaque fois
         if (i == 0 || i % 100 == 0)
             println("step " * string(i) * ": a=" * string(round.(a.data, digits = 3)) * " b=" * string(round.(b.data, digits = 3)))
         end
