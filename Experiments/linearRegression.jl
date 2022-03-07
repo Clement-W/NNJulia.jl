@@ -9,8 +9,8 @@ function linear_regression()
     Y = f(2, 9, X) #2*x + 9
     data = (X, Y)
 
-    a = Tensor(rand())
-    b = Tensor(rand())
+    a = Tensor(rand(), true)
+    b = Tensor(rand(), true)
     lr = 0.0001
 
     println("real a = 2 and real b = 9")
@@ -27,8 +27,8 @@ function linear_regression()
 
         backward!(loss)
 
-        a -= lr * a.gradient
-        b -= lr * b.gradient
+        a.data -= lr * a.gradient
+        b.data -= lr * b.gradient
 
         # ici a est un nouveau tensor à chaque fois
         if (i == 0 || i % 100 == 0)

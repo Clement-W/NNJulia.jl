@@ -3,7 +3,7 @@ using .Autodiff
 
 function minimize()
 
-    x = Tensor(100 .* rand(3, 2))
+    x = Tensor(100 .* rand(3, 2), true)
 
     lr = 0.1
 
@@ -12,7 +12,7 @@ function minimize()
         sumOfSquare = sum(x .* x)
         backward!(sumOfSquare)
 
-        x -= lr * x.gradient
+        x.data -= lr * x.gradient
         println("step " * string(i) * " :" * string(round.(x.data, digits = 3)))
     end
 
