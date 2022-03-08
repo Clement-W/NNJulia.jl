@@ -1,4 +1,4 @@
-include("../src/Autodiff.jl")
+include("../src/Autodiff/Autodiff.jl")
 using .Autodiff
 using Test
 

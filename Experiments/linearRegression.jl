@@ -1,4 +1,4 @@
-include("../src/Autodiff.jl")
+include("../src/Autodiff/Autodiff.jl")
 using .Autodiff
 
 function linear_regression()
@@ -34,20 +34,13 @@ function linear_regression()
         if (i == 0 || i % 100 == 0)
             println("step " * string(i) * ": a=" * string(round.(a.data, digits = 3)) * " b=" * string(round.(b.data, digits = 3)))
         end
-        if (i == 200)
-            println(a)
-            println(b)
-            println(X)
-            println(Y)
-            println(y)
-            println(loss)
-        end
     end
 
-    println("a : ")
-    println(a)
-    println("\nb : ")
+    print("a : ")
+    print(a)
+    print("\nb : ")
     print(b)
+    println()
 
 end
 

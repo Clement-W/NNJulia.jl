@@ -422,15 +422,4 @@ end
 
 
 
-#=
-TODO:
-indexer and slice operator
-
-pow operator
-sin,cos,tan,tanh ?
-
-muladd ?
-=#
-
-
 
