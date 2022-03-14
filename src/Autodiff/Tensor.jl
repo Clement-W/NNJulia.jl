@@ -1,4 +1,3 @@
-# To counter mutually recursive fields between TensorDependency and Tensor
 abstract type AbstractTensor end
 
 struct TensorDependency
@@ -39,6 +38,7 @@ Tensor(data::T, gradient::Union{T,Nothing}) where {T<:Union{AbstractArray,Float6
 Tensor(data::T, dependencies::Union{Vector{TensorDependency},Nothing}) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, (dependencies !== nothing) ? zero(data) : nothing, dependencies, dependencies !== nothing)
 # if dependencies == nothing, requires_grad is set to false and gradient is set to nothing, else it is set to true
 
+
 # customize the set property for t.data
 function Base.setproperty!(t::Tensor, prop::Symbol, val)
     if (prop == :data)
@@ -62,6 +62,9 @@ Base.ndims(t::Tensor{Union{Float64,Int64,AbstractArray}}) = ndims(t.data)
 # return the length of the tensor
 Base.length(t::Tensor{Union{Float64,Int64,AbstractArray}}) = length(t.data)
 
+Base.iterate(t::Tensor{Union{Float64,Int64,AbstractArray}}) = iterate(t.data)
+
+Base.iterate(t::Tensor{Union{Float64,Int64,AbstractArray}}, state) = iterate(t.data, state)
 
 # set the gradient to 0 
 function zero_grad!(t::Tensor)
