@@ -779,8 +779,6 @@ end
     end
 end
 
-#TODO: trouver pourquoi ça ça marche pas alors que les autres oui
-
 @testset "Test ./ operator" begin
     @testset "Element-wise true division" begin
         @testset "2 tensors requiring gradient" begin

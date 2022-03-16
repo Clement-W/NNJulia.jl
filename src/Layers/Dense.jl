@@ -1,6 +1,7 @@
 include("../Autodiff/Autodiff.jl")
 using .Autodiff
 
+# move this abstract type into the parent module file
 abstract type AbstractLayer end
 
 # The struct is imutable but the values of the matrix W, and vector B can be changed 
@@ -37,12 +38,13 @@ function Base.show(io::IO, d::Dense)
     println()
     print(io, "bias: " * string(size(d.bias)))
     println()
-    print(io, "activation functtion: " * string(d.activation))
+    print(io, "activation function: " * string(d.activation))
+    println()
 end
 
-function zero_grad!(d::Dense)
-    Autodiff.zero_grad!(d.weight)
-    Autodiff.zero_grad!(d.bias)
+function Autodiff.zero_grad!(d::Dense)
+    zero_grad!(d.weight)
+    zero_grad!(d.bias)
 end
 
 # Make the Dense struct callable to compute f(W*x+b)
