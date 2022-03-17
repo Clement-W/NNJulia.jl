@@ -1,4 +1,5 @@
-include("../src/Layers/Sequential.jl")
+include("../src/NNJulia.jl")
+using .NNJulia
 using Test
 
 
@@ -101,7 +102,7 @@ using Test
 
             @test output.data == 33
 
-            Autodiff.backward!(output, 1)
+            backward!(output, 1)
 
             @test seq.layers[2].weight.gradient == 7
             @test seq.layers[2].bias.gradient == 1

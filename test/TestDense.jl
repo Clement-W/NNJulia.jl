@@ -1,4 +1,5 @@
-include("../src/Layers/Dense.jl")
+include("../src/NNJulia.jl")
+using .NNJulia
 using Test
 
 
@@ -109,7 +110,7 @@ using Test
 
             @test output.data == 7
 
-            Autodiff.backward!(output, 10)
+            backward!(output, 10)
 
             @test d.weight.gradient == 3 * 10
             @test d.bias.gradient == 1 * 10
@@ -124,7 +125,7 @@ using Test
 
             @test output.data == 14
 
-            Autodiff.backward!(output, 10)
+            backward!(output, 10)
 
             @test d.weight.gradient == 6 * 10
             @test d.bias.gradient == 2 * 10

@@ -1,7 +1,4 @@
-include("Dense.jl")
-
-# move this abstract type into the parent module file
-abstract type AbstractModel end
+using .Autodiff
 
 struct Sequential{T<:AbstractLayer} <: AbstractModel
     #TODO: assert that the input and output size of the layers are compatible
@@ -22,7 +19,7 @@ end
 
 function Autodiff.zero_grad!(s::Sequential)
     for layer in s.layers
-        zero_grad!(layer)
+        Autodiff.zero_grad!(layer)
     end
 end
 
