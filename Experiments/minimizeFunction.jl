@@ -1,5 +1,5 @@
-include("../src/Autodiff/Autodiff.jl")
-using .Autodiff
+include("../src/NNJulia.jl")
+using .NNJulia
 
 function minimize()
 

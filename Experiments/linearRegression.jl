@@ -1,5 +1,5 @@
-include("../src/Autodiff/Autodiff.jl")
-using .Autodiff
+include("../src/NNJulia.jl")
+using .NNJulia
 
 function linear_regression()
     f(a, b, x) = a .* x .+ b
@@ -46,3 +46,4 @@ end
 
 # test performances :
 @time linear_regression()
+# @benchmark linear_regression()
