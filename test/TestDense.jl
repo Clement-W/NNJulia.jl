@@ -159,4 +159,16 @@ end
         y = d4(y)
     end
 
+end
+
+
+@testset "parameters method" begin
+    w = Tensor(2, true)
+    b = Tensor(1, true)
+
+    d = Dense(w, b)
+    params = parameters(d)
+
+    @test params[1] == w
+    @test params[2] == b
 end;

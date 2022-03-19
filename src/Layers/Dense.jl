@@ -29,7 +29,11 @@ function Dense(in::Int64, out::Int64, activ::Function = identity)
 end
 
 function Base.show(io::IO, d::Dense)
-    println(io, "Dense: ", string(size(d.weight)[2]), " --> " * string(size(d.weight)[1]))
+    if (ndims(d.weight) != 0)
+        println(io, "Dense: ", string(size(d.weight)[2]), " --> " * string(size(d.weight)[1]))
+    else
+        println(io, "Dense: 1 --> 1 ")
+    end
     print(io, "weight: " * string(size(d.weight)))
     println()
     print(io, "bias: " * string(size(d.bias)))
@@ -48,4 +52,7 @@ end
 # the activation function needs to be be applied element-wise
 # for exemple : (x)-> x .+ 2
 
+
+# return every trainable tensors of a dense layer
+parameters(d::Dense) = Tensor[d.weight, d.bias]
 

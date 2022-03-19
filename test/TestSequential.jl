@@ -125,5 +125,55 @@ end
     add!(s, Dense(2, 4))
 
     @test length(s.layers) == 1
-end;
+end
 
+
+@testset "Test parameters method" begin
+    @testset "Check if every parameters is well returned" begin
+        w1 = Tensor(2, true)
+        b1 = Tensor(1, true)
+        d1 = Dense(w1, b1)
+
+        w2 = Tensor(4, true)
+        b2 = Tensor(7, true)
+        d2 = Dense(w2, b2)
+
+        s = Sequential(d1, d2)
+        params = parameters(s)
+
+        @test length(params) == 4
+
+        @test params[1] == w1
+        @test params[2] == b1
+
+        @test params[3] == w2
+        @test params[4] == b2
+    end
+
+    @testset "Update parameters with their gradient" begin
+        w1 = Tensor(2, 100)
+        b1 = Tensor(1, 200)
+        d1 = Dense(w1, b1)
+
+        w2 = Tensor(4, 300)
+        b2 = Tensor(7, 400)
+        d2 = Dense(w2, b2)
+
+        s = Sequential(d1, d2)
+
+        params = parameters(s)
+        for p in params
+            p.data = p.data .+ p.gradient
+        end
+
+        @test s.layers[1].weight.data == 102
+        @test s.layers[1].bias.data == 201
+
+        @test s.layers[2].weight.data == 304
+        @test s.layers[2].bias.data == 407
+
+
+    end
+
+
+end;

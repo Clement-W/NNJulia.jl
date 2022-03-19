@@ -32,8 +32,18 @@ function Base.show(io::IO, s::Sequential)
     end
 end
 
-function add!(model::Sequential,layer::AbstractLayer)
-    push!(model.layers,layer)
+# add a layer to the sequential layers
+function add!(model::Sequential, layer::AbstractLayer)
+    push!(model.layers, layer)
+end
+
+# return an array containing a reference to every parameters of the layers
+function parameters(s::Sequential)
+    p = Tensor[]
+    for layer in s.layers
+        append!(p, parameters(layer))
+    end
+    return p
 end
 
 
