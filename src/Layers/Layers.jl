@@ -3,7 +3,7 @@ module Layers
 abstract type AbstractLayer end
 abstract type AbstractModel end
 
-export Dense, Sequential, Convolution
+export Dense, Sequential, add!, Convolution
 
 # two dots to import from parent module
 using ..Autodiff

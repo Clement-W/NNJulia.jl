@@ -8,6 +8,8 @@ end
 # Constructor accepting an arbitrary number of arguments (of abstract layer)
 Sequential(layers::Vararg{T}) where {T<:AbstractLayer} = Sequential([layers...])
 
+# THis constructor creates an empty list of layers
+Sequential() = Sequential(AbstractLayer[])
 
 # Make the Sequential struct callable to forward the input into the first layer, forwarding the result in the second layer, etc.
 function (s::Sequential)(x::Union{Tensor,AbstractArray,Int64,Float64})
@@ -28,6 +30,10 @@ function Base.show(io::IO, s::Sequential)
     for layer in s.layers
         print(layer)
     end
+end
+
+function add!(model::Sequential,layer::AbstractLayer)
+    push!(model.layers,layer)
 end
 
 

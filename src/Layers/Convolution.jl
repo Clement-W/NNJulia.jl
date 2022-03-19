@@ -7,6 +7,6 @@ struct Convolution{T<:Tensor,F<:Function} <: AbstractLayer
     bias::T # list of biases associated to each convolution filters
     activation::F
 
-
+#add conv operator for tensors in tensor.jl ?
 
 end
