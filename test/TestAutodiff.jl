@@ -113,40 +113,6 @@ end
 end
 
 
-@testset "Tensor sum" begin
-    t1 = Tensor([1, 2, 3], true)
-    t2 = sum(t1)
-
-    @test t2.requires_grad == true
-
-    backward!(t2)
-    @test t1.data == [1, 2, 3]
-    @test t2.data == 6
-
-    @test t1.gradient == [1, 1, 1]
-    @test t2.gradient == 1
-
-    zero_grad!(t1)
-    zero_grad!(t2)
-
-    backward!(t2, -10)
-    @test t1.gradient == [-10, -10, -10]
-    @test t2.gradient == -10
-
-    t3 = Tensor([1 2; 3 4])
-    t4 = sum(t3)
-
-    @test t3.gradient === nothing
-    @test t3.dependencies === nothing
-    @test t3.requires_grad == false
-
-    @test t4.data == 10
-    @test t4.gradient === nothing
-    @test t4.dependencies === nothing
-    @test t4.requires_grad == false
-end
-
-
 
 @testset "Test + operator" begin
     @testset "Simple binary addition" begin
@@ -886,52 +852,6 @@ end
         @test t1.gradient == [0.5 0.5 0.5; 1 1 1]
         @test t2.gradient == [-4.5 -6 -7.5]
     end
-end
-
-#=
-@testset "Test log operator " begin
-    t1 = Tensor([1 2 3])
-
-    t3 = log(t1)
-    @test t3.data == [log(1) log(2) log(3)]
-
-    backward!(t3, [2 2 2])
-
-    @test t1.gradient == [2 1 2 / 3]
-end=#
-
-@testset "Tensor log operator" begin
-    t1 = Tensor([1, 2, 3], true)
-    t2 = log(t1)
-
-    @test t2.requires_grad == true
-
-    backward!(t2, [1, 1, 1])
-
-    @test t1.data == [1, 2, 3]
-    @test t2.data == [log(1), log(2), log(3)]
-
-    @test t1.gradient == [1, 0.5, 1 / 3]
-    @test t2.gradient == [1, 1, 1]
-
-    zero_grad!(t1)
-    zero_grad!(t2)
-
-    backward!(t2, [-10, -10, -10])
-    @test t1.gradient ≈ [-10, -5, -10 / 3]
-    @test t2.gradient == [-10, -10, -10]
-
-
-    t3 = Tensor([1 2; 3 4])
-    t4 = log(t3)
-
-    @test t3.gradient === nothing
-    @test t3.dependencies === nothing
-    @test t3.requires_grad == false
-
-    @test t4.data == [log(1) log(2); log(3) log(4)]
-    @test t4.gradient === nothing
-    @test t4.dependencies === nothing
-    @test t4.requires_grad == false
 end;
+
 

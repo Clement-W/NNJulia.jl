@@ -117,31 +117,6 @@ function backward!(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) wher
 
 end
 
-# Return the sum of the tensor's elements
-function Base.sum(t::Tensor)
-
-    data = sum(t.data)
-
-    if (t.requires_grad)
-
-        # Function used to compute the gradient of t :
-        gradientFunction(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient * ones(size(t.data))
-        #=
-        incomingGradient is a one element tensor, because the output of the sum is a 
-        one element tensor. In the sum function, each element has the same weight 
-        (1*x1 + 1*x2 + ... + 1*xn), so the gradient of this tensor wrt to the sum tensor
-        is a tensor composed of ones, with the shape of the original tensor.
-        d(grad)/d(thisTensor) = d(grad)/d(sum) * d(sum)/d(thisTensor) = grad * (1,1,1,...)
-        =#
-
-        dependencies = [TensorDependency(t, gradientFunction)]
-    else
-        dependencies = nothing
-    end
-
-    return Tensor(data, dependencies)
-end
-
 
 # Used to support gradient computation with broadcast operations made with element-wise operators such as .+
 function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
@@ -406,22 +381,6 @@ Base.:broadcasted(::typeof(/), t1::Tensor, notATensor::T) where {T<:Union{Abstra
 Base.:broadcasted(::typeof(/), notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(notATensor) ./ t1
 
 
-# log operator to perform element-wise neperian logarithm on a tensor
-function Base.:log(t1::Tensor)
-
-    data = log.(t1.data)
-
-    if (t1.requires_grad)
-        # Function used to compute the gradient of t1 :
-        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient .* (1 ./ t1.data)
-        # d(ln(t1))/d(t1) = 1/t1, so we just need to multiply the incoming gradient by 1/t1.
-        dependencies = [TensorDependency(t1, gradientFunctionT1)]
-    else
-        dependencies = nothing
-    end
-
-    return Tensor(data, dependencies)
-end
 
 
 

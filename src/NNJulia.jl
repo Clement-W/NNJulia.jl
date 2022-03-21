@@ -1,7 +1,7 @@
 module NNJulia
 
 include("Autodiff/Autodiff.jl")
-export AbstractTensor, Tensor, TensorDependency, zero_grad!, backward!
+export AbstractTensor, Tensor, TensorDependency, zero_grad!, backward!, sigmoid, relu, leakyrelu
 using .Autodiff
 
 include("Layers/Layers.jl")
@@ -11,6 +11,8 @@ using .Layers
 include("Optimisers/Optimisers.jl")
 export AbstractOptimiser, GradientDescent, update!
 using .Optimisers
+
+include("Model.jl")
 
 
 end
