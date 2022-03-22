@@ -12,6 +12,11 @@ include("Optimisers/Optimisers.jl")
 export AbstractOptimiser, GradientDescent, update!
 using .Optimisers
 
+include("Loss/Loss.jl")
+export MSE, BinaryCrossentropy
+using .Loss
+
+
 include("Model.jl")
 
 
