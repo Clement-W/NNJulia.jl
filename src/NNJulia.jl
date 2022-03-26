@@ -16,7 +16,8 @@ include("Loss/Loss.jl")
 export MSE, BinaryCrossentropy
 using .Loss
 
-
+include("DataLoader.jl")
+export DataLoader
 include("Model.jl")
 
 

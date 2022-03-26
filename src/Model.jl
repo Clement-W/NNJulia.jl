@@ -1,2 +1,1 @@
-# train, compile, test, eval
-
+# train, test, eval

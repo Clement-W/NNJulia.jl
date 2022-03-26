@@ -4,10 +4,6 @@ export MSE, BinaryCrossentropy
 
 using ..Autodiff
 
-t = Tensor(3)
-
-#mse (regression), binarycrossentropy (classification), etc.
-
 function MSE(predicted::Tensor, target::Tensor)
     #L(y,y^i)=∑(y−y^​i​)^2
     errors = predicted .- target
