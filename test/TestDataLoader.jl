@@ -60,8 +60,8 @@ end
     @test d.indices == [i for i in range(1, 100, step=2)]
 
     for data in d
-        @test data[1] == [x[1], x[2]]
-        @test data[2] == [y[1], y[2]]
+        @test data[1] == [x[1] x[2]]
+        @test data[2] == [y[1] y[2]]
         break
     end
 
@@ -98,9 +98,9 @@ end
     for data in d
 
         #test input value
-        @test data[1] == [x[1, :] x[2, :]]'
+        @test data[1] == [x[1, :] x[2, :]]
         #test label value
-        @test data[2] == [y[1] y[2]]'
+        @test data[2] == [y[1] y[2]]
         break
     end
 

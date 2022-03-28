@@ -312,6 +312,95 @@ end
             @test t1.gradient == [1 1 1; 2 2 2]
         end
     end
+
+
+    @testset "Test element-wise addition between a tensor and a scalar/vector/matrix" begin
+        @testset "Element-wise addition" begin
+            @testset "t1 = tensors requiring gradient and t2 = an array" begin
+                t1 = Tensor([1, 2, 3], true)
+                t2 = [2, 2, 2]
+                t3 = t1 .+ t2
+
+                @test t1.data == [1, 2, 3]
+                @test t3.data == [3, 4, 5]
+                @test t1.gradient == [0, 0, 0]
+                @test t3.gradient == [0, 0, 0]
+                @test size(t3.dependencies) == (1,)
+                @test t1.dependencies === nothing
+
+                backward!(t3, [10, 20, 30])
+
+                @test t3.gradient == [10, 20, 30]
+                @test t1.gradient == [10, 20, 30]
+            end
+
+            @testset "t1 = an array and t2 is a tensor requiring gradient" begin
+                t2 = Tensor([1, 2, 3], true)
+                t1 = [2, 2, 2]
+                t3 = t1 .+ t2
+
+                @test t2.data == [1, 2, 3]
+                @test t3.data == [3, 4, 5]
+                @test t2.gradient == [0, 0, 0]
+                @test t3.gradient == [0, 0, 0]
+                @test size(t3.dependencies) == (1,)
+                @test t2.dependencies === nothing
+
+                backward!(t3, [10, 20, 30])
+
+                @test t3.gradient == [10, 20, 30]
+                @test t2.gradient == [10, 20, 30]
+            end
+        end
+
+
+        @testset "Broadcast element-wise addition that adds a dimension, with t2 as a scalar " begin
+            t1 = Tensor([1 2 3; 4 5 6], true)
+            t2 = 1
+            t3 = t1 .+ t2
+
+            @test t1.data == [1 2 3; 4 5 6]
+
+            @test t3.data == [2 3 4; 5 6 7]
+            @test t1.gradient == [0 0 0; 0 0 0]
+
+            @test t3.gradient == [0 0 0; 0 0 0]
+            @test size(t3.dependencies) == (1,)
+            @test t1.dependencies === nothing
+
+            @test size(t3) == (2, 3)
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+
+            @test t3.gradient == [1 1 1; 2 2 2]
+
+            @test t1.gradient == [1 1 1; 2 2 2]
+        end
+
+        @testset "Broadcast element-wise addition with no dimensions added with t2 as a matrix " begin
+            t1 = Tensor([1 2 3; 4 5 6], true)
+            t2 = [2 2 2]
+            t3 = t1 .+ t2
+
+            @test t1.data == [1 2 3; 4 5 6]
+
+            @test t3.data == [3 4 5; 6 7 8]
+            @test t1.gradient == [0 0 0; 0 0 0]
+
+            @test t3.gradient == [0 0 0; 0 0 0]
+            @test size(t3.dependencies) == (1,)
+            @test t1.dependencies === nothing
+
+            @test size(t3) == (2, 3)
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+            @test t3.gradient == [1 1 1; 2 2 2]
+            @test t1.gradient == [1 1 1; 2 2 2]
+        end
+    end
+
 end
 
 
@@ -529,6 +618,98 @@ end
             @test t1.gradient == [1 1 1; 2 2 2]
         end
     end
+
+
+    @testset "Test element-wise substraction between a tensor and a scalar/vector/matrix" begin
+        @testset "Element-wise substraction" begin
+            @testset "t1 = tensors requiring gradient and t2 = an array" begin
+                t1 = Tensor([1, 2, 3], true)
+                t2 = [2, 2, 2]
+                t3 = t1 .- t2
+
+                @test t1.data == [1, 2, 3]
+
+                @test t3.data == [-1, 0, 1]
+                @test t1.gradient == [0, 0, 0]
+
+                @test t3.gradient == [0, 0, 0]
+                @test size(t3.dependencies) == (1,)
+                @test t1.dependencies === nothing
+
+                backward!(t3, [10, 20, 30])
+
+                @test t3.gradient == [10, 20, 30]
+                @test t1.gradient == [10, 20, 30]
+            end
+
+            @testset "t1 = an array and t2 is a tensor requiring gradient" begin
+
+                t2 = Tensor([1, 2, 3], true)
+                t1 = [2, 2, 2]
+                t3 = t1 .- t2
+
+                @test t2.data == [1, 2, 3]
+
+                @test t3.data == [1, 0, -1]
+                @test t2.gradient == [0, 0, 0]
+
+                @test t3.gradient == [0, 0, 0]
+                @test size(t3.dependencies) == (1,)
+                @test t2.dependencies === nothing
+
+                backward!(t3, [10, 20, 30])
+
+                @test t3.gradient == [10, 20, 30]
+                @test t2.gradient == [-10, -20, -30]
+            end
+
+        end
+
+        @testset "Broadcast element-wise substraction that adds a dimension with t2 as a scalar " begin
+            t1 = Tensor([1 2 3; 4 5 6], true)
+            t2 = 1
+            t3 = t1 .- t2
+
+            @test t1.data == [1 2 3; 4 5 6]
+
+            @test t3.data == [0 1 2; 3 4 5]
+            @test t1.gradient == [0 0 0; 0 0 0]
+
+            @test t3.gradient == [0 0 0; 0 0 0]
+            @test size(t3.dependencies) == (1,)
+            @test t1.dependencies === nothing
+
+            @test size(t3) == (2, 3)
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+            @test t3.gradient == [1 1 1; 2 2 2]
+            @test t1.gradient == [1 1 1; 2 2 2]
+        end
+
+        @testset "Broadcast element-wise substraction with no dimensions added with t2 a matrix " begin
+            t1 = Tensor([1 2 3; 4 5 6], true)
+            t2 = [2 2 2]
+            t3 = t1 .- t2
+
+            @test t1.data == [1 2 3; 4 5 6]
+
+            @test t3.data == [-1 0 1; 2 3 4]
+            @test t1.gradient == [0 0 0; 0 0 0]
+
+            @test t3.gradient == [0 0 0; 0 0 0]
+            @test size(t3.dependencies) == (1,)
+            @test t1.dependencies === nothing
+
+            @test size(t3) == (2, 3)
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+            @test t3.gradient == [1 1 1; 2 2 2]
+
+            @test t1.gradient == [1 1 1; 2 2 2]
+        end
+    end
 end
 
 
@@ -743,10 +924,107 @@ end
             @test t1.gradient == [2 2 2; 4 4 4]
         end
     end
+
+
+    @testset "Test element-wise multiplication between a tensor and a scalar/vector/matrix" begin
+        @testset "Element-wise multiplication" begin
+            @testset "t1 = tensors requiring gradient and t2 = an array" begin
+                t1 = Tensor([1, 2, 3], true)
+                t2 = [2, 2, 2]
+                t3 = t1 .* t2
+
+                @test t1.data == [1, 2, 3]
+
+                @test t3.data == [2, 4, 6]
+                @test t1.gradient == [0, 0, 0]
+
+                @test t3.gradient == [0, 0, 0]
+                @test size(t3.dependencies) == (1,)
+                @test t1.dependencies === nothing
+
+
+                backward!(t3, [10, 20, 30])
+
+                @test t3.gradient == [10, 20, 30]
+                @test t1.gradient == [20, 40, 60]
+            end
+
+            @testset "t1 = an array and t2 is a tensor requiring gradient" begin
+
+                t2 = Tensor([1, 2, 3], true)
+                t1 = [2, 2, 2]
+                t3 = t1 .* t2
+
+                @test t2.data == [1, 2, 3]
+
+                @test t3.data == [2, 4, 6]
+                @test t2.gradient == [0, 0, 0]
+
+                @test t3.gradient == [0, 0, 0]
+                @test size(t3.dependencies) == (1,)
+                @test t2.dependencies === nothing
+
+
+                backward!(t3, [10, 20, 30])
+
+                @test t3.gradient == [10, 20, 30]
+                @test t2.gradient == [20, 40, 60]
+            end
+
+        end
+
+        @testset "Broadcast element-wise multiplication that adds a dimension with t2 as a scalar" begin
+            t1 = Tensor([1 2 3; 4 5 6], true)
+            t2 = 2
+            t3 = t1 .* t2
+
+            @test t1.data == [1 2 3; 4 5 6]
+
+            @test t3.data == [2 4 6; 8 10 12]
+            @test t1.gradient == [0 0 0; 0 0 0]
+
+            @test t3.gradient == [0 0 0; 0 0 0]
+            @test size(t3.dependencies) == (1,)
+            @test t1.dependencies === nothing
+
+            @test size(t3) == (2, 3)
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+
+            @test t3.gradient == [1 1 1; 2 2 2]
+            @test t1.gradient == [2 2 2; 4 4 4]
+        end
+
+        @testset "Broadcast element-wise multiplication with no dimensions added with t2 as a matrix " begin
+            t1 = Tensor([1 2 3; 4 5 6], true)
+            t2 = [2 2 2]
+            t3 = t1 .* t2
+
+            @test t1.data == [1 2 3; 4 5 6]
+
+            @test t3.data == [2 4 6; 8 10 12]
+            @test t1.gradient == [0 0 0; 0 0 0]
+
+            @test t3.gradient == [0 0 0; 0 0 0]
+            @test size(t3.dependencies) == (1,)
+            @test t1.dependencies === nothing
+
+            @test size(t3) == (2, 3)
+
+            backward!(t3, [1 1 1; 2 2 2])
+
+
+            @test t3.gradient == [1 1 1; 2 2 2]
+
+            @test t1.gradient == [2 2 2; 4 4 4]
+        end
+    end
+
 end
 
 @testset "Test ./ operator" begin
-    @testset "Element-wise true division" begin
+    @testset "Element-wise true division between 2 tensors" begin
         @testset "2 tensors requiring gradient" begin
 
             t1 = Tensor([1 2 3], true)
@@ -852,6 +1130,100 @@ end
         @test t1.gradient == [0.5 0.5 0.5; 1 1 1]
         @test t2.gradient == [-4.5 -6 -7.5]
     end
+
+
+
+    @testset "Element-wise true division between a tensor and a scalar/vector/matrix" begin
+        @testset "t1 = tensors requiring gradient and t2 = an array" begin
+
+            t1 = Tensor([1 2 3], true)
+            t2 = [2 2 2]
+            t3 = t1 ./ t2
+
+            @test t1.data == [1 2 3]
+
+            @test t3.data == [0.5 1.0 1.5]
+            @test t1.gradient == [0 0 0]
+
+            @test t3.gradient == [0.0 0.0 0.0]
+            @test size(t3.dependencies) == (1,)
+            @test t1.dependencies === nothing
+
+            backward!(t3, [10 20 30])
+
+            @test t3.gradient == [10.0 20.0 30.0]
+            @test t1.gradient == [5.0 10.0 15.0]
+        end
+
+        @testset "t1 = an array and t2 is a tensor requiring gradient" begin
+
+            t1 = [1 2 3]
+            t2 = Tensor([2 2 2], true)
+            t3 = t1 ./ t2
+
+
+            @test t2.data == [2 2 2]
+            @test t3.data == [0.5 1.0 1.5]
+
+            @test t2.gradient == [0 0 0]
+            @test t3.gradient == [0.0 0.0 0.0]
+            @test size(t3.dependencies) == (1,)
+            @test t2.dependencies === nothing
+
+            backward!(t3, [10 20 30])
+
+            @test t3.gradient == [10.0 20.0 30.0]
+            @test t2.gradient == [-2.5 -10.0 -22.5]
+        end
+    end
+
+
+    @testset "Broadcast element-wise true division that adds a dimension with t2 as a scalar " begin
+        t1 = Tensor([1 2 3; 4 5 6], true)
+        t2 = 2
+
+        t3 = t1 ./ t2
+
+        @test t1.data == [1 2 3; 4 5 6]
+
+        @test t3.data == [0.5 1 1.5; 2 2.5 3]
+        @test t1.gradient == [0 0 0; 0 0 0]
+
+        @test t3.gradient == [0 0 0; 0 0 0]
+        @test size(t3.dependencies) == (1,)
+        @test t1.dependencies === nothing
+
+        @test size(t3) == (2, 3)
+
+        backward!(t3, [1 1 1; 2 2 2])
+
+        @test t3.gradient == [1 1 1; 2 2 2]
+        @test t1.gradient == [0.5 0.5 0.5; 1 1 1]
+    end
+
+    @testset "Broadcast element-wise true division with no dimensions added with t2 as a matrix " begin
+        t1 = Tensor([2 4 6; 8 10 12], true)
+        t2 = [2 2 2]
+
+        t3 = t1 ./ t2
+
+        @test t1.data == [2 4 6; 8 10 12]
+
+        @test t3.data == [1 2 3; 4 5 6]
+        @test t1.gradient == [0 0 0; 0 0 0]
+
+        @test t3.gradient == [0 0 0; 0 0 0]
+        @test size(t3.dependencies) == (1,)
+        @test t1.dependencies === nothing
+        @test size(t3) == (2, 3)
+
+        backward!(t3, [1 1 1; 2 2 2])
+
+        @test t1.gradient == [0.5 0.5 0.5; 1 1 1]
+
+    end
+
+
 end;
 
 

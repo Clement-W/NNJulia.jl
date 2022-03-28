@@ -329,7 +329,6 @@ Base.:*(notATensor::T, t1::Tensor) where {T<:Union{AbstractArray,Float64,Int64}}
 
 # Element-wise multiplication (perform broadcast operation)
 function Base.:broadcasted(::typeof(*), t1::Tensor, t2::Tensor)
-
     data = t1.data .* t2.data
     # iniialise dependencies at nothing if none of the 2 tensors needs gradient computation
     dependencies = (t1.requires_grad || t2.requires_grad) ? TensorDependency[] : nothing

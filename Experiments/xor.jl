@@ -5,20 +5,20 @@ function xor()
 
     # yData is encoded this way : [1,0] if 0 and [0,1] if 1
     xData = [0 0; 1 0; 0 1; 1 1]
-    yData = [1 0; 0 1; 0 1; 1 0]
+    yData = reshape([0, 1, 1, 0], 4, 1)
 
     model = Sequential(
-        Dense(2, 5, tanh),
-        Dense(5, 5, tanh),
-        Dense(5, 2, tanh)
+        Dense(2, 8, tanh),
+        Dense(8, 1, sigmoid)
     )
 
-    opt = GradientDescent(0.03)
-    loss = MSE
+    opt = GradientDescent(0.1)
+    loss = BinaryCrossentropy
     batchsize = 1
     # PB quand le batch size est > 1, pb quand on ubdate les biais
     # ça fait (5,) + (batchsize,)
-    nbEpochs = 500
+    # TODO: trouver comment regler ça (avec le dataloader ?)
+    nbEpochs = 1000
 
     trainData = DataLoader(xData, yData, batchsize)
 
