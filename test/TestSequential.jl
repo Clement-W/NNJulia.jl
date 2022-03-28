@@ -96,25 +96,48 @@ end
 
 @testset "Backward a tensor into the Sequential" begin
     @testset "The sequential only have dense layers " begin
+        @testset "Dense with one neuron in the layers" begin
 
-        seq = Sequential(
-            Dense(Tensor(2, true), Tensor(1, true)),
-            Dense(Tensor(4, true), Tensor(5, true))
-        )
+            seq = Sequential(
+                Dense(Tensor(2, true), Tensor(1, true)),
+                Dense(Tensor(4, true), Tensor(5, true))
+            )
 
 
-        input = Tensor(3)
-        output = seq(input)
+            input = Tensor(3)
+            output = seq(input)
 
-        @test output.data == 33
+            @test output.data == 33
 
-        backward!(output, 1)
+            backward!(output, 1)
 
-        @test seq.layers[2].weight.gradient == 7
-        @test seq.layers[2].bias.gradient == 1
+            @test seq.layers[2].weight.gradient == 7
+            @test seq.layers[2].bias.gradient == 1
 
-        @test seq.layers[1].weight.gradient == 3 * 4
-        @test seq.layers[1].bias.gradient == 1 * 4
+            @test seq.layers[1].weight.gradient == 3 * 4
+            @test seq.layers[1].bias.gradient == 1 * 4
+        end
+
+        @testset "Dense with multiple neurons in the layers w and b" begin
+
+            seq = Sequential(
+                Dense(Tensor([2 -1; -3 2], true), Tensor([0, 0], true)),
+                Dense(Tensor([4 5], true), Tensor([-1], true))
+            )
+
+            input = Tensor([4, 7])
+            output = seq(input)
+
+            @test output.data == [13]
+
+            backward!(output, [1])
+
+            @test seq.layers[2].weight.gradient == [1 2]
+            @test seq.layers[2].bias.gradient == [1]
+
+            @test seq.layers[1].weight.gradient == [16 28; 20 35]
+            @test seq.layers[1].bias.gradient == [4, 5]
+        end
 
     end
 

@@ -18,7 +18,9 @@ using .Loss
 
 include("DataLoader.jl")
 export DataLoader
+
 include("Model.jl")
+export train!
 
 
 end

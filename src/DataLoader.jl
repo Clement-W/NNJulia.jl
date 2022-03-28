@@ -48,8 +48,9 @@ function Base.iterate(d::DataLoader, state=1)
     # but the first dimension corresponds to the index taken in the batch
     # that is why we substract 1 to ndims(data)
 
-    x = d.XData[index, ntuple(index -> :, Val(ndims(d.XData) - 1))...]
-    y = d.YData[index, ntuple(index -> :, Val(ndims(d.YData) - 1))...]
+    # permutedims is used to forward a ndims(data) x batchSize to the layers
+    x = permutedims(d.XData[index, ntuple(index -> :, Val(ndims(d.XData) - 1))...])
+    y = permutedims(d.YData[index, ntuple(index -> :, Val(ndims(d.YData) - 1))...])
     batch = (x, y)
     # when iterating, batch is returned and is a tuple containing the input data, and the corresponding label
     return (batch, nextState)

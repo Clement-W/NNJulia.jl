@@ -5,7 +5,7 @@ struct Dense{T<:Tensor,F<:Function} <: AbstractLayer
     weight::T
     bias::T
     activation::F
-    function Dense(w::Tensor, b::Tensor, f::Function = identity)
+    function Dense(w::Tensor, b::Tensor, f::Function=identity)
         if (size(w) != size(b) && size(w) != ())
             if (size(w)[1] != size(b)[1])
                 throw(ErrorException("Weights and Biases dimensions are not compatible : W=" * string(size(w)) * ", B=" * string(size(b)) * " and " * string(size(w)[1]) * "!=" * string(size(b)[1])))
@@ -20,7 +20,7 @@ struct Dense{T<:Tensor,F<:Function} <: AbstractLayer
 end
 
 # alternative contrsuctor
-function Dense(in::Int64, out::Int64, activ::Function = identity)
+function Dense(in::Int64, out::Int64, activ::Function=identity)
     # Initialise weights and bias with random Float64 between -1 and 1
     w = Tensor(rand(out, in) * 2 .- 1, true)
     b = Tensor(rand(out) * 2 .- 1, true)

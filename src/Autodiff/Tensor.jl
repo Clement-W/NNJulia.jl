@@ -29,7 +29,7 @@ mutable struct Tensor{T<:Union{AbstractArray,Float64,Int64}} <: AbstractTensor
 end
 
 # Aditional constructors
-Tensor(data::T, requires_grad::Bool = false) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, (requires_grad != false) ? zero(data) : nothing, nothing, requires_grad)
+Tensor(data::T, requires_grad::Bool=false) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, (requires_grad != false) ? zero(data) : nothing, nothing, requires_grad)
 # if requires_grad is true, the gradient is set to zero, else it is set to nothing
 
 Tensor(data::T, gradient::Union{T,Nothing}) where {T<:Union{AbstractArray,Float64,Int64}} = Tensor(data, gradient, nothing, gradient !== nothing)
@@ -86,7 +86,7 @@ end
 
 # Backpropagate a gradient through the auto differenciation graph by
 # recurcively calling this method on the tensor dependencies.
-function backward!(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) where {T<:Union{AbstractArray,Float64,Int64}}
+function backward!(t::Tensor, incomingGradient::Union{T,Nothing}=nothing) where {T<:Union{AbstractArray,Float64,Int64}}
 
     if (t.requires_grad == false)
         throw(ErrorException("Can't call backward on a tensor that don't requires gradient"))
@@ -103,7 +103,8 @@ function backward!(t::Tensor, incomingGradient::Union{T,Nothing} = nothing) wher
 
     # Add the incoming gradient to the current tensor gradient (initially set to 0)
     # Adding the incoming gradient allow gradient accumulation
-    t.gradient += incomingGradient
+    t.gradient = t.gradient .+ incomingGradient
+
 
     # Loop recursively into each dependencies of the current tensor to go through the whole graph
     if (t.dependencies !== nothing)
@@ -131,7 +132,7 @@ function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArra
 
     for _ = 1:nbDimsAdded
         # sum the first axis, and remove the additional dimension
-        gradient = dropdims(sum(gradient, dims = 1), dims = 1)
+        gradient = dropdims(sum(gradient, dims=1), dims=1)
         if (size(gradient) == ())
             # if the gradient is a one element array, convert it to a scalar
             gradient = gradient[1]
@@ -151,7 +152,7 @@ function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArra
         # If the dimension is equal to 1, it means that the operation is broadcasted along this axis
         # If it's a scalar, it doesn't change anything 
         if (size(t)[i] == 1)
-            gradient = sum(gradient, dims = i)
+            gradient = sum(gradient, dims=i)
         end
     end
 
