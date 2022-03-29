@@ -6,12 +6,12 @@ xData = reshape([0; 1; 1; 0], 4, 1)
 yData = [1 0; 0 1; 0 1; 1 0]
 
 model = Sequential(
-    Dense(1, 2, tanh)
+    Dense(Tensor(reshape([1, 1], 2, 1), true), Tensor([2, 2], true))
 )
 
 opt = GradientDescent(0.1)
 batchsize = 3
-lossFunction = MSE
+lossFunction(predicted, target) = sum(target .- predicted)
 
 trainData = DataLoader(xData, yData, batchsize)
 

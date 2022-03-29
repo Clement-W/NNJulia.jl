@@ -49,6 +49,7 @@ function Base.iterate(d::DataLoader, state=1)
     # that is why we substract 1 to ndims(data)
 
     # permutedims is used to forward a ndims(data) x batchSize to the layers
+    #TODO: make permutedims works for > 2 dim arrays
     x = permutedims(d.XData[index, ntuple(index -> :, Val(ndims(d.XData) - 1))...])
     y = permutedims(d.YData[index, ntuple(index -> :, Val(ndims(d.YData) - 1))...])
     batch = (x, y)

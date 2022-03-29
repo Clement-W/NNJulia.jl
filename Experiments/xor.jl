@@ -15,7 +15,7 @@ function xor()
 
     opt = GradientDescent(0.1)
     loss = BinaryCrossentropy
-    batchsize = 1
+    batchsize = 4
     # PB quand le batch size est > 1, pb quand on ubdate les biais
     # ça fait (5,) + (batchsize,)
     # TODO: trouver comment regler ça (avec le dataloader ?)

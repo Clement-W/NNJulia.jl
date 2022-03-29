@@ -123,16 +123,39 @@ end
 function handleBroadcasting(t::Tensor, gradient::T) where {T<:Union{AbstractArray,Float64,Int64}}
     #=
     First, sum out the dims added by the broadcast operation, so that the gradient
-    has the same dimensions of the tensor
+    has the same dimensions of the tensor.
+    To compute the gradient when a dimension is added by the broadcast operation, we need
+    to sum the gradient along the batch axis (the dimension added).
     This will handle this example : [[1,2],[3,4]] .+ [2,2] = [[3,4],[5,6]]
-    Here, the gradient of [2,2] will be the sum on the first axis (sum the columns) of the gradient of [[3,4],[5,6]]
+    Here, the gradient of [2,2] will be the sum on the last axis of the gradient of [[3,4],[5,6]]
     =#
+
     # If nbDimsAdded is positive, the tensor is smaller than the gradient, so it has been broadcasted to apply the operation
     nbDimsAdded = ndims(gradient) - ndims(t)
 
+    # for each demansion added, sum the added dimension
     for _ = 1:nbDimsAdded
-        # sum the first axis, and remove the additional dimension
-        gradient = dropdims(sum(gradient, dims=1), dims=1)
+
+        # If the tensor is a scalar, remove the last dimension of the gradient 
+        # At the end of the loop, every dimensions will be summed so the gradient will also be a scalar
+        addedDimIndex = ndims(gradient)
+
+
+        # If the tensor is a scalar, this loop is useless
+        if (ndims(t) > 0)
+            # Find the added dimension, starting from the end
+            for (ind, dimension) in enumerate(reverse(size(gradient)))
+                # If the dimension in the gradient is not in the tensor, it is the added dimension
+                if ((dimension in size(t) == false))
+                    println("JE PASSE ICIIIIIII")
+                    addedDimIndex = ind
+                    break
+                end
+            end
+        end
+
+        # sum the axis of the added dimension, and remove the additional dimension
+        gradient = dropdims(sum(gradient, dims=addedDimIndex), dims=addedDimIndex)
         if (size(gradient) == ())
             # if the gradient is a one element array, convert it to a scalar
             gradient = gradient[1]
