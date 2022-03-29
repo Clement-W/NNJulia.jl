@@ -3,8 +3,11 @@ using .NNJulia
 
 function xor()
 
-    xData = [0 0; 1 0; 0 1; 1 1]
-    yData = reshape([0, 1, 1, 0], 4, 1)
+
+    xData = [
+        0 1 0 1
+        0 0 1 1]
+    yData = [0 1 1 0]
 
     model = Sequential(
         Dense(2, 8, tanh),
