@@ -36,7 +36,7 @@ function Base.iterate(d::DataLoader, state=1)
     # second part of the slice operator  (next index)
     # the next index is the minimum between current index + batchsize and the number of data samples
 
-    nextIndex = min((d.indices[state] + d.batchSize) - 1, size(d.XData)[1])
+    nextIndex = min((d.indices[state] + d.batchSize) - 1, size(d.XData)[ndims(d.XData)])
 
     # range of index going from curent index to the next index computed before
     index = d.indices[state]:nextIndex
