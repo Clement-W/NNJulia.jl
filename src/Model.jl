@@ -1,6 +1,6 @@
 # train, test, eval
 
-function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Function, trainData::DataLoader, nbEpochs::Int)
+function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Function, trainData::DataLoader, nbEpochs::Int, verbose::Bool=true)
     #history = [] TODO: history array (like keras)
     for epoch in 1:nbEpochs
         epochLoss = 0.0
@@ -22,7 +22,7 @@ function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Func
             predictions = model(inputs)
 
             # Compute accuracy for this batch
-            accuracy = computeAccuracyOneHot(predictions, actual)
+            accuracy += computeAccuracy(predictions, actual)
 
             # Compute the loss for this batch
             loss = lossFunction(predictions, actual)
@@ -36,13 +36,15 @@ function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Func
         end
         accuracy = accuracy / length(trainData)
 
-        println("Epoch " * string(epoch) * " : accuracy = " * string(accuracy) * "%, loss = " * string(epochLoss.data))
+        if (verbose)
+            println("Epoch " * string(epoch) * " : accuracy = " * string(accuracy) * "%, loss = " * string(epochLoss.data))
+        end
     end
 
 end
 
 
-function computeAccuracyOneHot(predictions::Tensor, actual::T) where {T<:Union{AbstractArray,Float64,Int64}}
+function computeAccuracy(predictions::Tensor, actual::T) where {T<:Union{AbstractArray,Float64,Int64}}
+    #return sum(round.(predictions.data, digits=1) == actual)
     #TODO:
-    return 0
 end

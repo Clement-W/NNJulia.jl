@@ -97,7 +97,7 @@ function relu(t1::Tensor)
 end
 
 # leaky relu function to perform element-wise leaky relu on a tensor
-function leakyrelu(t1::Tensor, a = 0.01)
+function leakyrelu(t1::Tensor, a=0.01)
 
     # if x > 0, leakyrelu(x,a) = x
     # if x<= 0, leakyrlu(x,a) = a*x

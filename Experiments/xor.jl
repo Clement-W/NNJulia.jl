@@ -10,7 +10,7 @@ function xor()
     yData = [0 1 1 0]
 
     model = Sequential(
-        Dense(2, 8, tanh),
+        Dense(2, 8, relu),
         Dense(8, 1, sigmoid),
     )
 
