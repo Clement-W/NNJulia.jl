@@ -20,7 +20,7 @@ include("DataLoader.jl")
 export DataLoader
 
 include("Model.jl")
-export train!
+export train!, predict
 
 
 end

@@ -44,7 +44,15 @@ function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Func
 end
 
 
+
+
 function computeAccuracy(predictions::Tensor, actual::T) where {T<:Union{AbstractArray,Float64,Int64}}
     #return sum(round.(predictions.data, digits=1) == actual)
     #TODO:
+    return 0
+end
+
+
+function predict(model::AbstractModel, xData::Union{Tensor,AbstractArray,Int64,Float64})
+    return model(xData)
 end

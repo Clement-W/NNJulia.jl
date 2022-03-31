@@ -11,6 +11,7 @@ function xor()
 
     model = Sequential(
         Dense(2, 8, relu),
+        Dense(8, 8, relu),
         Dense(8, 1, sigmoid),
     )
 
@@ -21,7 +22,10 @@ function xor()
 
     trainData = DataLoader(xData, yData, batchsize)
 
-    train!(model, opt, loss, trainData, nbEpochs)
+    train!(model, opt, loss, trainData, nbEpochs, false)
+
+    println("prediction on xData : ")
+    println(round.(predict(model, xData).data, digits=1))
 
 end
 
