@@ -1,17 +1,22 @@
 module Loss
 
-export MSE, BinaryCrossentropy
+export AbstractLoss, MSE, BinaryCrossentropy, compute_loss
 
 using ..Autodiff
 
-function MSE(predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+abstract type AbstractLoss end
+
+struct MSE <: AbstractLoss end
+
+struct BinaryCrossentropy <: AbstractLoss end
+
+function compute_loss(lossF::MSE, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     #L(y,y^i)=∑(y−y^​i​)^2
     errors = predicted .- target
     return sum(errors .* errors)
 end
 
-
-function BinaryCrossentropy(predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+function compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     # https://peltarion.com/knowledge-center/documentation/modeling-view/build-an-ai-model/loss-functions/binary-crossentropy
     f = -1 / length(predicted)
     part1 = (1 .- target)
@@ -20,9 +25,9 @@ function BinaryCrossentropy(predicted::Tensor, target::Union{Tensor,AbstractArra
     # (1 .- target) .* log(1 .- predicted) don't return a tensor
     # but part1 .* part2 do return a tenor
     res = f .* sum((target .* log(predicted)) .+ (part1 .* part2))
-
     return res
 end
 
 
-end
+
+end #module

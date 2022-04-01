@@ -16,13 +16,16 @@ function xor()
     )
 
     opt = GradientDescent(0.1)
-    loss = BinaryCrossentropy
+    loss = BinaryCrossentropy()
+    metrics = BinaryAccuracy()
     batchsize = 4
     nbEpochs = 500
 
+    trainParams = TrainParameters(opt, loss, metrics)
+
     trainData = DataLoader(xData, yData, batchsize)
 
-    train!(model, opt, loss, trainData, nbEpochs, false)
+    train!(model, trainParams, trainData, nbEpochs)
 
     println("prediction on xData : ")
     println(round.(predict(model, xData).data, digits=1))

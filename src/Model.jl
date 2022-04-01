@@ -1,7 +1,15 @@
 # train, test, eval
 
-function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Function, trainData::DataLoader, nbEpochs::Int, verbose::Bool=true)
+struct TrainParameters
+    opt::AbstractOptimiser
+    lossFunction::AbstractLoss
+    metrics::AbstractMetrics
+end
+
+
+function train!(model::AbstractModel, trainParams::TrainParameters, trainData::DataLoader, nbEpochs::Int, verbose::Bool=true)
     #history = [] TODO: history array (like keras)
+
     for epoch in 1:nbEpochs
         epochLoss = 0.0
         accuracy = 0.0
@@ -22,17 +30,17 @@ function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Func
             predictions = model(inputs)
 
             # Compute accuracy for this batch
-            accuracy += computeAccuracy(predictions, actual)
+            accuracy += compute_accuracy(trainParams.metrics, predictions, actual)
 
             # Compute the loss for this batch
-            loss = lossFunction(predictions, actual)
+            loss = compute_loss(trainParams.lossFunction, predictions, actual)
 
             # Backpropagate the error through gradients
             backward!(loss)
 
             epochLoss += loss
 
-            update!(opt, model)
+            update!(trainParams.opt, model)
         end
         accuracy = accuracy / length(trainData)
 
@@ -44,15 +52,6 @@ function train!(model::AbstractModel, opt::AbstractOptimiser, lossFunction::Func
 end
 
 
-
-
-function computeAccuracy(predictions::Tensor, actual::T) where {T<:Union{AbstractArray,Float64,Int64}}
-    #return sum(round.(predictions.data, digits=1) == actual)
-    #TODO:
-    return 0
-end
-
-
-function predict(model::AbstractModel, xData::Union{Tensor,AbstractArray,Int64,Float64})
-    return model(xData)
+function predict(model::AbstractModel, inputs::Union{Tensor,AbstractArray,Int64,Float64})
+    return model(inputs)
 end

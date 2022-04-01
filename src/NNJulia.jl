@@ -1,5 +1,7 @@
 module NNJulia
 
+include("Utils.jl")
+
 include("Autodiff/Autodiff.jl")
 export AbstractTensor, Tensor, TensorDependency, zero_grad!, backward!, sigmoid, relu, leakyrelu
 using .Autodiff
@@ -13,14 +15,19 @@ export AbstractOptimiser, GradientDescent, update!
 using .Optimisers
 
 include("Loss/Loss.jl")
-export MSE, BinaryCrossentropy
+export AbstractLoss, MSE, BinaryCrossentropy
 using .Loss
+
+include("Metrics/Metrics.jl")
+export AbstractMetrics, Accuracy, BinaryAccuracy, CategoricalAccuracy, compute_accuracy
+using .Metrics
 
 include("DataLoader.jl")
 export DataLoader
 
 include("Model.jl")
-export train!, predict
+export TrainParameters, train!, predict
+
 
 
 end
