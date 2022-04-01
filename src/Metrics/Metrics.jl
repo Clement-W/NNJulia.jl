@@ -8,17 +8,36 @@ abstract type AbstractMetrics end
 
 struct Accuracy <: AbstractMetrics end
 
-struct BinaryAccuracy <: AbstractMetrics end
+struct BinaryAccuracy <: AbstractMetrics
+    threshold::Float64
+end
 
 struct CategoricalAccuracy <: AbstractMetrics end
 
 
 function compute_accuracy(metrics::Accuracy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+    #TODO:
     return 0
 end
+
 function compute_accuracy(metrics::BinaryAccuracy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
-    return 0
+    size(predicted) == size(target) || throw("The predictions must have the same size of the target")
+
+    # every predictions > threshold is set to 1
+    adjustedPredictions = predicted.data .> metrics.threshold
+
+    accuracy = 0
+    if (ndims(predicted) == 1 || size(predicted)[2] == 1)
+        accuracy = convert(Int64, adjustedPredictions == target)
+    else
+        batchSize = size(predicted)[2]
+        binaryVec = [adjustedPredictions[:, i] == target[:, i] for i = 1:batchSize]
+        accuracy = sum(binaryVec) / batchSize
+    end
+
+    return accuracy
 end
+
 function compute_accuracy(metrics::CategoricalAccuracy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     return 0
 end

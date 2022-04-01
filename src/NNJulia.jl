@@ -26,7 +26,7 @@ include("DataLoader.jl")
 export DataLoader
 
 include("Model.jl")
-export TrainParameters, train!, predict
+export TrainParameters, train!, predict, evaluate
 
 
 

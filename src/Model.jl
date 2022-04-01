@@ -45,12 +45,16 @@ function train!(model::AbstractModel, trainParams::TrainParameters, trainData::D
         accuracy = accuracy / length(trainData)
 
         if (verbose)
-            println("Epoch " * string(epoch) * " : accuracy = " * string(accuracy) * "%, loss = " * string(epochLoss.data))
+            println("Epoch " * string(epoch) * " : accuracy = " * string(accuracy) * ", loss = " * string(epochLoss.data))
         end
     end
 
 end
 
+function evaluate(model::AbstractModel, metrics::BinaryAccuracy, xData::Union{Tensor,AbstractArray,Float64,Int64}, yData::Union{Tensor,AbstractArray,Float64,Int64})
+    predictions = model(xData)
+    return compute_accuracy(metrics, predictions, yData)
+end
 
 function predict(model::AbstractModel, inputs::Union{Tensor,AbstractArray,Int64,Float64})
     return model(inputs)
