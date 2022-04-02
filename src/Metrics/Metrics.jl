@@ -15,22 +15,22 @@ end
 struct CategoricalAccuracy <: AbstractMetrics end
 
 
-function compute_accuracy(metrics::Accuracy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+function compute_accuracy(metrics::Accuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     #TODO:
     return 0
 end
 
-function compute_accuracy(metrics::BinaryAccuracy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
-    size(predicted) == size(target) || throw("The predictions must have the same size of the target")
+function compute_accuracy(metrics::BinaryAccuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+    size(predictions) == size(target) || throw("The predictions must have the same size of the target")
 
     # every predictions > threshold is set to 1
-    adjustedPredictions = predicted.data .> metrics.threshold
+    adjustedPredictions = predictions.data .> metrics.threshold
 
     accuracy = 0
-    if (ndims(predicted) == 1 || size(predicted)[2] == 1)
+    if (ndims(predictions) == 1 || size(predictions)[2] == 1)
         accuracy = convert(Int64, adjustedPredictions == target)
     else
-        batchSize = size(predicted)[2]
+        batchSize = size(predictions)[2]
         binaryVec = [adjustedPredictions[:, i] == target[:, i] for i = 1:batchSize]
         accuracy = sum(binaryVec) / batchSize
     end
@@ -38,23 +38,18 @@ function compute_accuracy(metrics::BinaryAccuracy, predicted::Tensor, target::Un
     return accuracy
 end
 
-function compute_accuracy(metrics::CategoricalAccuracy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
-    return 0
-end
+function compute_accuracy(metrics::CategoricalAccuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+    size(predictions) == size(target) || throw("The predictions must have the same size of the target")
 
-#This metric creates two local variables, total and count that are used to compute the frequency with which y_pred matches y_true
-function accuracy(predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
-    #mean(onecold(ŷ) .== onecold(y)
-    return 0
-end
-
-function binary_accuracy(predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64}, treshold::Float64=0.5)
-
-    return 0
-end
-
-function categorical_accuracy(predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
-    return 0
+    accuracy = 0
+    if (ndims(predictions) == 1 || size(predictions)[2] == 1)
+        accuracy = convert(Int64, argmax(predictions.data) == argmax(target))
+    else
+        batchSize = size(predictions)[2]
+        binaryVec = [argmax(predictions.data[:, i]) == argmax(target[:, i]) for i = 1:batchSize]
+        accuracy = sum(binaryVec) / batchSize
+    end
+    return accuracy
 end
 
 
