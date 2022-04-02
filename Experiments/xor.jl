@@ -1,8 +1,7 @@
 include("../src/NNJulia.jl")
 using .NNJulia
 
-function xor()
-
+function xor(verbose::Bool=true)
 
     xData = [
         0 1 0 1
@@ -29,16 +28,23 @@ function xor()
 
     trainData = DataLoader(xData, yData, batchsize)
 
-    train!(model, trainParams, trainData, nbEpochs)
+    train!(model, trainParams, trainData, nbEpochs, verbose)
 
-    println("\nEvaluate the model : ")
-    print("Accuracy = ")
+    if (verbose)
+        println("\nEvaluate the model : ")
+        print("Accuracy = ")
+    end
     acc = evaluate(model, metrics, xData, yData) * 100
-    println(string(acc) * "%\n")
+    if (verbose)
+        println(string(acc) * "%\n")
+    end
 
-    println("prediction on xData : ")
-    round.(predict(model, xData).data, digits=1)
+    if (verbose)
+        println("prediction on xData : ")
+        round.(predict(model, xData).data, digits=1)
+    end
 
 end
 
 xor()
+# test performances with @benchmark xor(false)
