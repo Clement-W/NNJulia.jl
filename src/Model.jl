@@ -8,7 +8,7 @@ end
 
 
 function train!(model::AbstractModel, trainParams::TrainParameters, trainData::DataLoader, nbEpochs::Int, verbose::Bool=true)
-    #history = [] TODO: history array (like keras)
+    history = Dict("accuracy" => Float64[], "loss" => Float64[])
 
     for epoch in 1:nbEpochs
         epochLoss = 0.0
@@ -44,10 +44,15 @@ function train!(model::AbstractModel, trainParams::TrainParameters, trainData::D
         end
         accuracy = accuracy / length(trainData)
 
+        push!(history["accuracy"], accuracy)
+        push!(history["loss"], epochLoss.data)
+
         if (verbose)
             println("Epoch " * string(epoch) * " : accuracy = " * string(accuracy) * ", loss = " * string(epochLoss.data))
         end
     end
+
+    return history
 
 end
 
