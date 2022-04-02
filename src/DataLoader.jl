@@ -1,14 +1,14 @@
 # define constructors of DataLoader,Base.iterate and length
 using Random
 
-struct DataLoader{T<:Union{AbstractArray,Float64,Int64}}
-    XData::T
-    YData::T
+struct DataLoader{T1<:Union{AbstractArray,Float64,Int64},T2<:Union{AbstractArray,Float64,Int64}}
+    XData::T1
+    YData::T2
     batchSize::Int
     indices::Vector{Int}
     shuffle::Bool
     nbBatch::Int
-    function DataLoader(XData::T, YData::T, batchSize=1::Int, shuffle=false::Bool) where {T<:Union{AbstractArray,Float64,Int64}}
+    function DataLoader(XData::T1, YData::T2, batchSize=1::Int, shuffle=false::Bool) where {T1<:Union{AbstractArray,Float64,Int64},T2<:Union{AbstractArray,Float64,Int64}}
         size(XData)[ndims(XData)] == size(YData)[ndims(YData)] || throw("xData and yData must have the same number of samples")
         ndims(XData) == ndims(YData) || throw("XData and YData must have the same number of dimensions")
         batchSize > 0 || throw("BatchSIze must be > 0")
@@ -16,7 +16,7 @@ struct DataLoader{T<:Union{AbstractArray,Float64,Int64}}
         indices = range(1, size(XData)[ndims(XData)], step=batchSize)
 
         nbBatch = length(indices)
-        new{Union{AbstractArray,Float64,Int64}}(XData, YData, batchSize, indices, shuffle, nbBatch)
+        new{Union{AbstractArray,Float64,Int64},Union{AbstractArray,Float64,Int64}}(XData, YData, batchSize, indices, shuffle, nbBatch)
     end
 end
 
