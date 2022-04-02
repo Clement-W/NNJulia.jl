@@ -1,6 +1,7 @@
 module NNJulia
 
 include("Utils.jl")
+export split_train_test
 
 include("Autodiff/Autodiff.jl")
 export AbstractTensor, Tensor, TensorDependency, zero_grad!, backward!, sigmoid, relu, leakyrelu
