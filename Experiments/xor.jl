@@ -3,6 +3,7 @@ using .NNJulia
 
 function xor(verbose::Bool=true)
 
+    # Create xData with the 4 possibilites of input for xor
     xData = [
         0 1 0 1
         0 0 1 1]
@@ -12,30 +13,43 @@ function xor(verbose::Bool=true)
         1 0 0 1
         0 1 1 0]
 
+
+    # Create the model
     model = Sequential(
         Dense(2, 8, relu),
         Dense(8, 8, relu),
         Dense(8, 2, sigmoid),
     )
 
+    # Initialise the optimiser, the loss function and the metrics used to compute accuracy
     opt = GradientDescent(0.1)
     loss = BinaryCrossentropy()
     metrics = BinaryAccuracy(0.9)
+
+    # Pass it to the TrainParameters struct that will be used during training
+    trainParams = TrainParameters(opt, loss, metrics)
+
+
+    # Training specifications
     batchsize = 4
     nbEpochs = 500
 
-    trainParams = TrainParameters(opt, loss, metrics)
-
+    # Load the train data into a dataloader
     trainData = DataLoader(xData, yData, batchsize)
 
+    # train the model
     train!(model, trainParams, trainData, nbEpochs, verbose)
 
     if (verbose)
         println("\nEvaluate the model : ")
         print("Accuracy = ")
     end
-    acc = evaluate(model, metrics, xData, yData) * 100
+
+
+
     if (verbose)
+        # evaluate the model
+        acc = evaluate(model, metrics, xData, yData) * 100
         println(string(acc) * "%\n")
     end
 
