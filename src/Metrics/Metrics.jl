@@ -32,6 +32,8 @@ Represents the categorical accuracy metric
 """
 struct CategoricalAccuracy <: AbstractMetrics end
 
+#TODO: implement classic accuracy to be able to compute accuracy for regression tasks
+
 """
     compute_accuracy(metrics::BinaryAccuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     compute_accuracy(metrics::CategoricalAccuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})

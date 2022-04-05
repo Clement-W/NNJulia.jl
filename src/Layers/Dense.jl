@@ -51,16 +51,11 @@ String representation of a Dense layer
 """
 function Base.show(io::IO, d::Dense)
     if (ndims(d.weight) != 0)
-        println(io, "Dense: ", string(size(d.weight)[2]), " --> " * string(size(d.weight)[1]))
+        print(io, "Dense: ", string(size(d.weight)[2]), " --> " * string(size(d.weight)[1]))
     else
-        println(io, "Dense: 1 --> 1 ")
+        print(io, "Dense: 1 --> 1 ")
     end
-    print(io, "weight: " * string(size(d.weight)))
-    println()
-    print(io, "bias: " * string(size(d.bias)))
-    println()
-    print(io, "activation function: " * string(d.activation))
-    println()
+    println(", Activation = " * string(d.activation))
 end
 
 """
