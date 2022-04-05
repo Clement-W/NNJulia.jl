@@ -1,7 +1,7 @@
 module NNJulia
 
 include("Autodiff/Autodiff.jl")
-export AbstractTensor, Tensor, TensorDependency, zero_grad!, backward!, sigmoid, relu, leakyrelu
+export AbstractTensor, Tensor, TensorDependency, zero_grad!, backward!, handle_broadcasting!, sigmoid, relu, leakyrelu
 using .Autodiff
 
 include("Layers/Layers.jl")
