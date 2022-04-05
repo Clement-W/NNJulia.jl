@@ -1,7 +1,6 @@
 module Layers
 
-#TODO: Each layer needs to implement the function parameters(layer)
-# (needs to be specified in the documentation) 
+# Each layer needs to implement the function parameters(layer)
 
 abstract type AbstractLayer end
 abstract type AbstractModel end
