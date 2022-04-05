@@ -4,25 +4,46 @@ using Random
 using Plots
 using .Layers
 
+"""
+    split_train_test(xData::AbstractArray, yData::AbstractArray, at::Float64)
+
+Split the xData and yData (shuffled) into a train and a test set.
+
+For example, with at=0.8, the train set will contain 80% of the original data
+and the test set will contain 20% of it.
+"""
 function split_train_test(xData::AbstractArray, yData::AbstractArray, at::Float64)
     size(xData)[ndims(xData)] == size(yData)[ndims(yData)] || throw("xData and yData must have the same number of samples")
+
+    # Get the total number of samples
     nbSamples = size(xData)[ndims(xData)]
 
+    # Create a shuffled list of the indexes that goes from 1 to nbSamples
     indexes = shuffle(1:nbSamples)
+
+    # Put the indexes of the train and test set in a list
+    # for the train set, it goes from 1 to at*nbSamples
     train_idx = view(indexes, 1:floor(Int, nbSamples * at))
+    # for the test set, it goes from at*nbSamples+1 to nbSamples
     test_idx = view(indexes, (floor(Int, at * nbSamples)+1):nbSamples)
 
+    # Get the data from the computed indexes
     x_train = xData[:, train_idx]
     x_test = xData[:, test_idx]
 
     y_train = yData[:, train_idx]
     y_test = yData[:, test_idx]
 
+    # Return the 4 subsets
     return x_train, y_train, x_test, y_test
 end
 
 
-# plot the decision frontier for 2D data
+"""
+    plot_decision_boundary(model::AbstractModel, xData::AbstractArray, yData::AbstractArray, levels::Int64=3)
+
+Plot a decision frontier of the model for 2D data with the given number of levels.
+"""
 function plot_decision_boundary(model::AbstractModel, xData::AbstractArray, yData::AbstractArray, levels::Int64=3)
 
     # set min and max values and give it some padding

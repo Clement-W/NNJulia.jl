@@ -55,7 +55,7 @@ function xor(verbose::Bool=true)
 
     if (verbose)
         println("prediction on xData : ")
-        round.(predict(model, xData).data, digits=1)
+        round.(model(xData).data, digits=1)
     end
 
 end

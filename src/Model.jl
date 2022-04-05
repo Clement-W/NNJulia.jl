@@ -1,12 +1,32 @@
 # train, test, eval
 
+"""
+TrainParameters(opt::AbstractOptimiser, lossFunction::AbstractLoss, metrics::AbstractMetrics)
+
+This struct store the important parameters used to train the model.
+
+# Fields
+- opt: The optimiser used to optimise the loss
+- lossFunction: The function used to compute the loss
+- metrics: The metrics used to compute the accuracy of the model
+"""
 struct TrainParameters
     opt::AbstractOptimiser
     lossFunction::AbstractLoss
     metrics::AbstractMetrics
 end
 
+"""
+    train!(model::AbstractModel, trainParams::TrainParameters, trainData::DataLoader, nbEpochs::Int, verbose::Bool=true)
 
+This method train a model on the trainData.
+The accuracy and the loss computed at each epoch is stored into a dictionnary that is returned at the end
+of the training.
+
+The dictionnary returned looks like this : 
+``` history = Dict("accuracy" => Float64[], "loss" => Float64[]) ```
+
+"""
 function train!(model::AbstractModel, trainParams::TrainParameters, trainData::DataLoader, nbEpochs::Int, verbose::Bool=true)
     history = Dict("accuracy" => Float64[], "loss" => Float64[])
 
@@ -56,11 +76,12 @@ function train!(model::AbstractModel, trainParams::TrainParameters, trainData::D
 
 end
 
+"""
+    evaluate(model::AbstractModel, metrics::BinaryAccuracy, xData::Union{Tensor,AbstractArray,Float64,Int64}, yData::Union{Tensor,AbstractArray,Float64,Int64})
+
+This method evaluate a model by returning the accuracy computed with the given metrics
+"""
 function evaluate(model::AbstractModel, metrics::BinaryAccuracy, xData::Union{Tensor,AbstractArray,Float64,Int64}, yData::Union{Tensor,AbstractArray,Float64,Int64})
     predictions = model(xData)
     return compute_accuracy(metrics, predictions, yData)
-end
-
-function predict(model::AbstractModel, inputs::Union{Tensor,AbstractArray,Int64,Float64})
-    return model(inputs)
 end
