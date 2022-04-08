@@ -17,7 +17,7 @@ export AbstractLoss, MSE, BinaryCrossentropy
 using .Loss
 
 include("Metrics/Metrics.jl")
-export AbstractMetrics, BinaryAccuracy, CategoricalAccuracy, compute_accuracy
+export AbstractMetrics, BinaryAccuracy, CategoricalAccuracy, Accuracy, compute_accuracy
 using .Metrics
 
 include("DataLoader.jl")

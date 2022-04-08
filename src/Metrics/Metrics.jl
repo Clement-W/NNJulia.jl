@@ -1,6 +1,6 @@
 module Metrics
 
-export AbstractMetrics, BinaryAccuracy, CategoricalAccuracy, compute_accuracy
+export AbstractMetrics, BinaryAccuracy, Accuracy, CategoricalAccuracy, compute_accuracy
 
 using ..Autodiff
 
@@ -32,11 +32,19 @@ Represents the categorical accuracy metric
 """
 struct CategoricalAccuracy <: AbstractMetrics end
 
-#TODO: implement classic accuracy to be able to compute accuracy for regression tasks
+
+"""
+    Accuracy
+
+Represents the classic accuracy metric
+
+"""
+struct Accuracy <: AbstractMetrics end
 
 """
     compute_accuracy(metrics::BinaryAccuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     compute_accuracy(metrics::CategoricalAccuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+    compute_accuracy(metrics::Accuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
 
 Compute the accuracy according to the metrics given.
 """
@@ -73,6 +81,23 @@ function compute_accuracy(metrics::CategoricalAccuracy, predictions::Tensor, tar
         # Create a binary vector that contains 1 where the argmax of the prediction is equal to the argmax of the target
         # if argmax are equal, the category predicted is correct.
         binaryVec = [argmax(predictions.data[:, i]) == argmax(target[:, i]) for i = 1:batchSize]
+        accuracy = sum(binaryVec) / batchSize
+    end
+    return accuracy
+end
+
+
+function compute_accuracy(metrics::Accuracy, predictions::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+    size(predictions) == size(target) || throw("The predictions must have the same size of the target")
+
+    accuracy = 0
+    if (ndims(predictions) == 1 || size(predictions)[2] == 1)
+        # For scalars, just check if their argmax is equal
+        accuracy = convert(Int64, predictions.data == target)
+    else
+        batchSize = size(predictions)[2]
+        # Create a binary vector that contains 1 where the the prediction is equal to the target
+        binaryVec = [(predictions.data[:, i]) == (target[:, i]) for i = 1:batchSize]
         accuracy = sum(binaryVec) / batchSize
     end
     return accuracy
