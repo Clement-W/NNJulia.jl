@@ -5,13 +5,13 @@ module Layers
 abstract type AbstractLayer end
 abstract type AbstractModel end
 
-export AbstractLayer, AbstractModel, Dense, Sequential, add!, parameters, Convolution
+export AbstractLayer, AbstractModel, Dense, Sequential, add!, parameters, Conv2D
 
 # two dots to import from parent module
 using ..Autodiff
 
 include("Dense.jl")
 include("Sequential.jl")
-include("Convolution.jl")
+include("Conv2D.jl")
 
 end

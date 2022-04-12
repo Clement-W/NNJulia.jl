@@ -5,7 +5,7 @@ export AbstractTensor, Tensor, TensorDependency, zero_grad!, backward!, handle_b
 using .Autodiff
 
 include("Layers/Layers.jl")
-export AbstractLayer, AbstractModel, Dense, Sequential, zero_grad!, add!, parameters, Convolution
+export AbstractLayer, AbstractModel, Dense, Sequential, zero_grad!, add!, parameters, Conv2D
 using .Layers
 
 include("Optimisers/Optimisers.jl")
