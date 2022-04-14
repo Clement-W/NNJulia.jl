@@ -77,11 +77,16 @@ If the data property is modified, the gradient is set to 0
 function Base.setproperty!(t::Tensor, prop::Symbol, val)
     if (prop == :data)
         # Reset the gradient to 0 if the data is set mannualy
+        if (t.requires_grad)
+            t.gradient = zero(t.data)
+        end
+        setfield!(t, :data, val)
+    elseif (prop == :gradient)
         if (t.requires_grad == false)
             throw(ErrorException("Can't change the gradient of a tensor with requires_grad = false"))
         end
-        t.gradient = zero(t.data)
-        setfield!(t, :data, val)
+        size(t.data) == size(val) || error("The gradient must have the same shape as the data")
+        setfield!(t, :gradient, val)
     else
         setfield!(t, prop, val)
     end

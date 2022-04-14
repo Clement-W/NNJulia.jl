@@ -83,4 +83,3 @@ The dense struct is callable, and compute f(W*x + b) with f the activation funct
 Return every trainable tensors of a dense layer (weight and biases)
 """
 parameters(d::Dense) = Tensor[d.weight, d.bias]
-

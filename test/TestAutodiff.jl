@@ -68,6 +68,17 @@ end
     @test t1.gradient == 5
     @test t1.dependencies === nothing
     @test t1.requires_grad == true
+
+    t1 = Tensor(3, false)
+    @test_throws ErrorException t1.gradient = 3
+    t1.data = 2
+    @test t1.data == 2
+
+    t1 = Tensor(5, true)
+    t1.data = 2
+    t1.gradient = 10
+
+
 end
 
 @testset "Tensor size" begin

@@ -17,7 +17,7 @@ struct Sequential{T<:AbstractLayer} <: AbstractModel
 end
 
 # Constructor accepting an arbitrary number of arguments (of abstract layer)
-Sequential(layers::Vararg{T}) where {T<:AbstractLayer} = Sequential([layers...])
+Sequential(layers::Vararg{AbstractLayer}) = Sequential([layers...])
 
 # This constructor creates an empty list of layers
 Sequential() = Sequential(AbstractLayer[])

@@ -16,10 +16,11 @@ using Test
             Dense(1000, 1000),
             Dense(1000, 500),
             Dense(500, 100),
-            Dense(100, 10)
+            Dense(100, 10),
+            Flatten(),
         ])
 
-        @test length(seq2.layers) == 5
+        @test length(seq2.layers) == 6
 
     end
 
@@ -29,10 +30,11 @@ using Test
         seq = Sequential(
             Dense(2, 5),
             Dense(5, 2),
-            Dense(2, 1)
+            Dense(2, 1),
+            Flatten()
         )
 
-        @test length(seq.layers) == 3
+        @test length(seq.layers) == 4
 
     end
 
@@ -65,6 +67,23 @@ end
 
     end
 
+    @testset "Sequential having Dense and Flatten layers" begin
+
+        seq = Sequential(
+            Flatten(),
+            Dense(12, 12),
+            Dense(12, 1)
+        )
+
+        x = rand(3, 4, 1)
+
+        # forward a vector
+        y = seq(x)
+
+        @test size(y) == (1, 1)
+
+    end
+
 end
 
 @testset "Test zero_grad on a Sequential" begin
@@ -76,7 +95,7 @@ end
     d2.weight.gradient = 99
     d2.bias.gradient = 150
 
-    seq = Sequential(d1, d2)
+    seq = Sequential(d1, d2, Flatten())
 
     @test seq.layers[1].weight.gradient == 100
     @test seq.layers[1].bias.gradient == 200
@@ -137,6 +156,34 @@ end
 
             @test seq.layers[1].weight.gradient == [16 28; 20 35]
             @test seq.layers[1].bias.gradient == [4, 5]
+        end
+
+    end
+
+    @testset "The sequential have dense and flatten layers " begin
+
+        @testset "Dense with multiple neurons and a flatten" begin
+
+            seq = Sequential(
+                Flatten(),
+                Dense(Tensor([2 -1; -3 2], true), Tensor([0, 0], true)),
+                Dense(Tensor([4 5], true), Tensor([-1], true))
+            )
+            x = ones(2, 1, 1) .* [4, 7]
+
+            input = Tensor(x)
+            output = seq(input)
+
+            @test output.data[1] == 13
+            @test size(output) == (1, 1)
+
+            backward!(output, ones(1, 1))
+
+            @test seq.layers[3].weight.gradient == [1 2]
+            @test seq.layers[3].bias.gradient == [1]
+
+            @test seq.layers[2].weight.gradient == [16 28; 20 35]
+            @test seq.layers[2].bias.gradient == [4, 5]
         end
 
     end
