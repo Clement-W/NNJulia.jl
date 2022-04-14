@@ -137,3 +137,16 @@ end;
     @test t1.gradient == [10 10; 0.1 10]
 
 end;
+
+@testset "Tensor softmax function" begin
+    t1 = Tensor([1 2 3; 4 8 1], true)
+    t2 = softmax(t1)
+
+    backward!(t2, [1 1 1; 1 1 1])
+
+    @test round.(t2.data, digits=4) == [0.0474 0.0025 0.8808; 0.9526 0.9975 0.1192]
+
+    @test t2.gradient == [1 1 1; 1 1 1]
+    @test round.(t1.gradient, digits=3) == [0.045 0.002 0.105; 0.045 0.002 0.105]
+
+end;

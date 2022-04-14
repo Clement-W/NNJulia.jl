@@ -159,3 +159,30 @@ function leakyrelu(t1::Tensor, a=0.01)
 
     return Tensor(data, dependencies)
 end
+
+
+
+"""
+    softmax(t1::Tensor) 
+
+Softmax function to perform softmax on a tensor.
+The tensor returned requires gradient if the initial tensor requires it.
+
+- d(softmax(t1))/d(t1) = softmax(t1)*(1-softmax(t1)) --> multiply the incoming gradient by softmax(t1)*(1-softmax(t1))
+"""
+function softmax(t1::Tensor)
+
+    probas = exp.(t1.data .- maximum(t1.data, dims=1))
+    data = probas ./ sum(probas, dims=1)
+
+    if (t1.requires_grad)
+        # Function used to compute the gradient of t1 :
+        gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = incomingGradient .* (data .* (1 .- data))
+        # derivataive of softmax(x) is softmax(x) .* (1 - softmax(x))
+        dependencies = [TensorDependency(t1, gradientFunctionT1)]
+    else
+        dependencies = nothing
+    end
+
+    return Tensor(data, dependencies)
+end

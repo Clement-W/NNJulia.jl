@@ -63,13 +63,15 @@ end
 
 x size is (n_rows,n_cols,colorChannel,BatchSize)
 """
-function (conv::Conv2D)(x::AbstractArray)
+#TODO: restart everything with im2col : https://leonardoaraujosantos.gitbook.io/artificial-inteligence/machine_learning/deep_learning/convolution_layer/making_faster 
+function (conv::Conv2D)(input::AbstractArray)
 
     # if x has 3 dimensions, it's size is (n_rows,n_cols,BatchSize)
     # so we add a fourth dimension equal to 1 to have a color channel dimension at 1
     # this will help to generalise the next steps
-    input = copy(x)
-    if (ndims(x) == 3)
+
+    #input = copy(x) # TODO: test if making a copy is necessary (or rechange the shape of the input after the convolution)
+    if (ndims(input) == 3)
         input = reshape(input, (size(input)[1], size(input)[2], 1, size(input)[3]))
     end
 
@@ -96,14 +98,12 @@ function (conv::Conv2D)(x::AbstractArray)
     for n in 1:batchsize_x
         # iterate over the filters
         for f in 1:n_f
-
             stride_h = 1
             stride_w = 1
 
             # for each point in the output
             for h_out in 1:nrows_out
                 for w_out in 1:ncols_out
-
                     # for each point in the filter
                     for k in 1:nrows_f
                         for l in 1:ncols_f
@@ -130,11 +130,31 @@ function (conv::Conv2D)(x::AbstractArray)
 
     out = conv.activation.(out)
 
-    #TODO: créer les dépendances, out dépend de w et de b (x required pas le gradient)
-    # vu qu'on va refaire de la convolution il faut peut-être metrre la convolution dans une fonction à part ?
+
+    function gradFunctionFilters(incomingGradient::AbstractArray)
+        # https://pavisj.medium.com/convolutions-and-backpropagations-46026a8f5d2c
+
+        # comment prendre en compte le padding ? on le fait avant sur x ?
+        #dw = conv(x,incGrad)
+
+
+    end
+
+    function gradFunctionBiases(incomingGradient::AbstractArray)
+        # the gradient is 1 * incoming gradient
+        # but the gradient needs to have the same shape as the bias vector. So the data
+        # is summed on every idexes except the last one that is the index of the filter.
+        return dropdims(sum(r, dims=(1, 2, 3)), dims=(1, 2, 3))
+    end
+
+    dep1 = TensorDependency(conv.filters, gradFunctionFilters)
+    dep2 = TensorDependency(conv.bias, gradFunctionBiases)
+
+    outTensor = Tensor(out, TensorDependency[dep1, dep2])
+
 
     # provisoire le temps de tester si la convolution fonctionne
-    return out
+    return outTensor
 
 
 end
