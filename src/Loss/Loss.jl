@@ -51,6 +51,9 @@ end
 # Compute loss for BinaryCrossentropy
 function compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     # https://peltarion.com/knowledge-center/documentation/modeling-view/build-an-ai-model/loss-functions/binary-crossentropy
+
+    clamp!(predicted.data, 1e-7, (1 - 1e-7))
+
     f = -1 / length(predicted)
     part1 = (1 .- target)
     part2 = log(1 .- predicted)

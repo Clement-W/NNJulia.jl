@@ -85,7 +85,7 @@ end
 
 This method evaluate a model by returning the accuracy computed with the given metrics
 """
-function evaluate(model::AbstractModel, metrics::BinaryAccuracy, xData::Union{Tensor,AbstractArray,Float64,Int64}, yData::Union{Tensor,AbstractArray,Float64,Int64})
+function evaluate(model::AbstractModel, metrics::AbstractMetrics, xData::Union{Tensor,AbstractArray,Float64,Int64}, yData::Union{Tensor,AbstractArray,Float64,Int64})
     predictions = model(xData)
     return compute_accuracy(metrics, predictions, yData)
 end
