@@ -13,7 +13,7 @@ export AbstractOptimiser, GradientDescent, update!
 using .Optimisers
 
 include("Loss/Loss.jl")
-export AbstractLoss, MSE, BinaryCrossentropy
+export AbstractLoss, MSE, BinaryCrossentropy, CategoricalCrossentropy, compute_loss
 using .Loss
 
 include("Metrics/Metrics.jl")
@@ -27,7 +27,7 @@ include("Model.jl")
 export TrainParameters, train!, predict, evaluate
 
 include("Utils.jl")
-export split_train_test, plot_decision_boundary
+export split_train_test, plot_decision_boundary, to_one_hot
 
 
 end

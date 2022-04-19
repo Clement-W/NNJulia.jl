@@ -70,3 +70,12 @@ function plot_decision_boundary(model::AbstractModel, xData::AbstractArray, yDat
     scatter!(xData[1, :], xData[2, :], group=yData[:])
 
 end
+
+"""
+    onehot(x::AbstractArray)
+
+Convert an array to to one hot encoded format.
+"""
+function to_one_hot(x::AbstractArray)
+    return (Int).(sort(unique(x)) .== permutedims(x))
+end

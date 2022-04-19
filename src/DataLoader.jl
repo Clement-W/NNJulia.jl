@@ -15,7 +15,7 @@ struct DataLoader{T1<:Union{AbstractArray,Float64,Int64},T2<:Union{AbstractArray
     nbBatch::Int
     function DataLoader(XData::T1, YData::T2, batchSize=1::Int, shuffle=false::Bool) where {T1<:Union{AbstractArray,Float64,Int64},T2<:Union{AbstractArray,Float64,Int64}}
         size(XData)[ndims(XData)] == size(YData)[ndims(YData)] || throw("xData and yData must have the same number of samples")
-        ndims(XData) == ndims(YData) || throw("XData and YData must have the same number of dimensions")
+        #ndims(XData) == ndims(YData) || throw("XData and YData must have the same number of dimensions")
         batchSize > 0 || throw("BatchSIze must be > 0")
 
         # Initialise the list of indices according to the batchsize

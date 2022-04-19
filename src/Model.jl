@@ -35,8 +35,9 @@ function train!(model::AbstractModel, trainParams::TrainParameters, trainData::D
         accuracy = 0.0
 
         #TODO: implement K-fold cross validation
-
+        cpt = 0
         for batch in trainData
+            cpt += 1
 
             # Get input data for this batch
             inputs = batch[1]
@@ -54,9 +55,12 @@ function train!(model::AbstractModel, trainParams::TrainParameters, trainData::D
 
             # Compute the loss for this batch
             loss = compute_loss(trainParams.lossFunction, predictions, actual)
-
             # Backpropagate the error through gradients
             backward!(loss)
+            #println(loss)
+            #println(predictions)
+
+
 
             epochLoss += loss
 

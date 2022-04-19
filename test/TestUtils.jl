@@ -14,3 +14,17 @@ using Test
     @test size(x_test) == (3, 20)
     @test size(y_test) == (1, 20)
 end;
+
+@testset "oneHot" begin
+    y_data = [1, 2, 3, 4, 1, 2]
+
+    y_onehot = to_one_hot(y_data)
+
+    @test size(y_onehot) == (4, 6)
+
+    @test y_onehot == [
+        1 0 0 0 1 0
+        0 1 0 0 0 1
+        0 0 1 0 0 0
+        0 0 0 1 0 0]
+end;

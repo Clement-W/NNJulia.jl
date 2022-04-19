@@ -1,6 +1,6 @@
 module Loss
 
-export AbstractLoss, MSE, BinaryCrossentropy, compute_loss
+export AbstractLoss, MSE, BinaryCrossentropy, CategoricalCrossentropy, compute_loss
 
 using ..Autodiff
 
@@ -28,6 +28,14 @@ struct BinaryCrossentropy <: AbstractLoss end
 
 
 """
+    CategoricalCrossentropy
+
+Represents the Binary crossentropy error function
+"""
+struct CategoricalCrossentropy <: AbstractLoss end
+
+
+"""
     compute_loss(lossF::MSE, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
 
@@ -50,6 +58,18 @@ function compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Unio
     # (1 .- target) .* log(1 .- predicted) don't return a tensor
     # but part1 .* part2 do return a tensor
     res = f .* sum((target .* log(predicted)) .+ (part1 .* part2))
+    return res
+end
+
+# Compute loss for CategoricalCrossentropy
+function compute_loss(lossF::CategoricalCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+
+    clamp!(predicted.data, 1e-7, (1 - 1e-7))
+
+    f = -1 / size(predicted)[end]
+    res = f * sum(target .* log(predicted))
+    #FIXME: le gradient n'est pas bon, voir testLoss, en réalité il est bon mais pas normalisé
+    # ce qui fait que le backward marche pas peut-êre ?
     return res
 end
 
