@@ -1,5 +1,6 @@
 # Import Dataset loader 
 using MLDatasets
+using Plots
 
 # Import NNJulia
 include("../src/NNJulia.jl")
@@ -29,8 +30,8 @@ model = Sequential(
 )
 
 # Initialise the optimiser, the loss function and the metrics used to compute accuracy
-opt = GradientDescent(0.0001)
-loss = CategoricalCrossentropy()
+opt = GradientDescent(0.05)
+loss = BinaryCrossentropy() # FIXME: Does not work with categorical crossentropy yet
 metrics = CategoricalAccuracy()
 
 # Pass it to the TrainParameters struct that will be used during training
@@ -38,8 +39,26 @@ trainParams = TrainParameters(opt, loss, metrics)
 
 # Training specifications
 batchsize = 64
-nbEpochs = 15;
+nbEpochs = 25;
 
 trainData = DataLoader(train_x, train_y_hot, batchsize, true);
 
 history = train!(model, trainParams, trainData, nbEpochs, true)
+
+p1 = plot(history["accuracy"], label="Accuracy", legend=:topleft)
+p2 = plot(history["loss"], label="Loss")
+plot(p1, p2, layout=2)
+
+acc = evaluate(model, metrics, test_x, test_y_hot)
+println("accuracy on test data = " * string(acc * 100) * "%")
+
+plots = []
+for i in 1:6
+    r = rand(1:10000)
+    img = (Gray.(permutedims(test_x[:, :, r])))
+    preds = model(reshape(test_x[:, :, r], :, 1))
+    predicted_label = argmax(preds.data)[1] - 1
+    push!(plots, plot(img, title="pred = " * string(predicted_label)))
+end
+
+plot(plots..., layout=6)
