@@ -1,4 +1,4 @@
-# Autodiff.jl
+# Autodiff
 
 CurrentModule = NNJulia.Autodiff
 
@@ -11,21 +11,9 @@ Tensor
 
 ```
 
-## Base methods dispatched
-
-```@docs
-Base.setproperty!
-Base.size
-Base.ndims
-Base.length
-Base.iterate
-Base.show
-```
-
 ## Methods for the gradient
 
 ```@docs
-zero_grad!
 backward!
 handle_broadcasting!
 ```
@@ -39,7 +27,7 @@ Base.:*
 Base.:broadcasted
 ```
 
-## Math functions
+## Math functions between tensors
 
 ```@docs
 Base.sum
@@ -48,5 +36,6 @@ Base.:tanh
 sigmoid
 relu
 leakyrelu
+softmax
 
 ```
