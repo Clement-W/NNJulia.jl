@@ -5,6 +5,17 @@ using Random
 
 This struct represent a DataLoader. A DataLoader is used to load a dataset with inputs and label, shuffle the data, separate it into batches, etc.
 It is possible to iterate over this struct to access the batches of the dataset.
+
+For the first iteration, the list of indices is shuffled (if required).
+Then, it return a subpart of the dataset according to the batch size with this size : (dataSize...,batchSize)
+
+For example, if the input data contains two values for a batch size of 4, this matrix will be returned :
+
+    [
+        1 0 1 1
+        0 1 0 1
+    ]
+
 """
 struct DataLoader{T1<:Union{AbstractArray,Float64,Int64},T2<:Union{AbstractArray,Float64,Int64}}
     XData::T1
@@ -36,10 +47,10 @@ Then, return a subpart of the dataset according to the batch size with this size
 
 For example, if the input data contains two values for a batch size of 4, this matrix will be returned :
 
-[
-    1 0 1 1
-    0 1 0 1
-]
+    [
+        1 0 1 1
+        0 1 0 1
+    ]
 """
 function Base.iterate(d::DataLoader, state=1)
     if (state > d.nbBatch)

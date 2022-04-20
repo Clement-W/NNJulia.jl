@@ -72,7 +72,7 @@ function plot_decision_boundary(model::AbstractModel, xData::AbstractArray, yDat
 end
 
 """
-    onehot(x::AbstractArray)
+    to_one_hot(x::AbstractArray)
 
 Convert an array to to one hot encoded format.
 """

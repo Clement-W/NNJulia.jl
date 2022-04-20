@@ -38,10 +38,10 @@ struct CategoricalCrossentropy <: AbstractLoss end
 """
     compute_loss(lossF::MSE, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
+    compute_loss(lossF::CategoricalCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
 
 Compute the loss according to the lossF given.
 """
-# Compute loss for MSE
 function compute_loss(lossF::MSE, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     #L(y,y^i)=∑(y−y^​i​)^2
     errors = predicted .- target

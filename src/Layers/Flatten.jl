@@ -1,7 +1,7 @@
 using .Autodiff
 
 """
-Flatten()
+    Flatten()
 
 This struct represents a Flatten layer 
 It flatten the input data into a 2 dimentional tensor of shape (n,batchSize)
