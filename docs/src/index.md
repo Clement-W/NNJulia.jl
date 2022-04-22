@@ -1,6 +1,6 @@
 # NNJulia Documentation
 
-TODO mettre le readme ici
+Minimalist neural network library made in Julia for educational purposes
 
 ```@contents
 Pages = ["general.md"]

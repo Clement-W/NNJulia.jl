@@ -70,7 +70,7 @@ function (conv::Conv2D)(input::AbstractArray)
     # so we add a fourth dimension equal to 1 to have a color channel dimension at 1
     # this will help to generalise the next steps
 
-    #input = copy(x) # TODO: test if making a copy is necessary (or rechange the shape of the input after the convolution)
+
     if (ndims(input) == 3)
         input = reshape(input, (size(input)[1], size(input)[2], 1, size(input)[3]))
     end

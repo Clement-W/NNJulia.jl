@@ -76,10 +76,6 @@
             #grad actual = [1.4978661367769954 1.1512925464970227; 0.02564664719377529 0.11157177565710485; 8.05904782547916 1.1512925464970227]
             #grad predicted = [0.0 0.0; -0.5263157894736842 0.0; 0.0 -5.0]
 
-            #FIXME: tester le calcul du gradient à la main :
-            # avec tensorflow on obtient :  [ 0.5 0.5 ; -0.02631581 0.5 ; 0.5 -4.5]
-            # en réalité ici c'est normalisé avec un + abs(target - 1)/sum(pred) donc ici c'est /2 donc met 0.5 là où c'est 0
-            # https://stackoverflow.com/questions/57965732/why-are-gradients-incorrect-for-categorical-crossentropy
         end
 
         @testset "Predicted is a tensor, and actual is a vector" begin

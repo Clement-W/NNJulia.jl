@@ -49,6 +49,7 @@ function compute_loss(lossF::MSE, predicted::Tensor, target::Union{Tensor,Abstra
 end
 
 # Compute loss for BinaryCrossentropy
+# FIXME: this implementation is mayble general enough to be used for Categorical data as well
 function compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
     # https://peltarion.com/knowledge-center/documentation/modeling-view/build-an-ai-model/loss-functions/binary-crossentropy
 
@@ -65,14 +66,13 @@ function compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Unio
 end
 
 # Compute loss for CategoricalCrossentropy
+# FIXME: My implementation of CategoricalCrossentropy do not work 
 function compute_loss(lossF::CategoricalCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
 
     clamp!(predicted.data, 1e-7, (1 - 1e-7))
 
     f = -1 / size(predicted)[end]
     res = f * sum(target .* log(predicted))
-    #FIXME: le gradient n'est pas bon, voir testLoss, en réalité il est bon mais pas normalisé
-    # ce qui fait que le backward marche pas peut-êre ?
     return res
 end
 

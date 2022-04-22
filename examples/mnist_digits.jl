@@ -25,7 +25,7 @@ model = Sequential(
 
 # Initialise the optimiser, the loss function and the metrics used to compute accuracy
 opt = GradientDescent(0.05)
-loss = BinaryCrossentropy() # FIXME: Does not work with categorical crossentropy yet
+loss = BinaryCrossentropy()
 metrics = CategoricalAccuracy()
 
 # Pass it to the TrainParameters struct that will be used during training
