@@ -1,5 +1,3 @@
-#TODO: implement to_categorical
-
 using Random
 using Plots
 using .Layers
