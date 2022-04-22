@@ -1,5 +1,4 @@
-include("../src/NNJulia.jl")
-using .NNJulia
+using NNJulia
 
 function xor(verbose::Bool=true)
 

@@ -1,5 +1,4 @@
-include("../src/NNJulia.jl")
-using .NNJulia
+using NNJulia
 
 function linear_regression()
 
@@ -23,7 +22,7 @@ function linear_regression()
     # Initialise learning rate
     lr = 0.0001
 
-    println("real a = 2 and real b = 9")
+    println("target a = 2 and target b = 9")
     println("random a = " * string(a.data))
     println("random b = " * string(b.data))
 
@@ -53,9 +52,9 @@ function linear_regression()
     end
 
     print("a : ")
-    print(a)
+    print(a.data)
     print("\nb : ")
-    print(b)
+    print(b.data)
     println()
 
 end
