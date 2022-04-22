@@ -7,7 +7,8 @@ makedocs(modules=[NNJulia], sitename="NNJulia")
 
 deploydocs(
     repo="github.com/Clement-W/NNJulia.jl.git",
-    devbranch="gh-pages"
+    devbranch="master",
+    branch="gh-pages"
 )
 
 
