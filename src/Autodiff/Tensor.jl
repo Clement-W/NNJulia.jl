@@ -13,7 +13,7 @@ For example, if a tensor is made up by the sum of 2 other tensor, this tensor wi
 in it's list of dependency. This struct also stores the derivative of the operation linking the dependencies, to be
 able to compute the gradient of the resul tensor, with respect to the  dependencies.
 
-#Fields
+# Fields
 - tensorDep: The tensor dependence
 - gradFunction: This function is used to compute the gradient of the tensor that depends on TensorDep, with respect to the dependencies.
 """

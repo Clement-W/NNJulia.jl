@@ -72,7 +72,7 @@ end
 """
     to_one_hot(x::AbstractArray)
 
-Convert an array to to one hot encoded format.
+Convert an array to one hot encoded format.
 """
 function to_one_hot(x::AbstractArray)
     return (Int).(sort(unique(x)) .== permutedims(x))

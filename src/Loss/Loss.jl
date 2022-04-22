@@ -30,7 +30,7 @@ struct BinaryCrossentropy <: AbstractLoss end
 """
     CategoricalCrossentropy
 
-Represents the Binary crossentropy error function
+Represents the Categorical crossentropy error function
 """
 struct CategoricalCrossentropy <: AbstractLoss end
 

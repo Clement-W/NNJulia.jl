@@ -1,7 +1,7 @@
 # train, test, eval
 
 """
-TrainParameters(opt::AbstractOptimiser, lossFunction::AbstractLoss, metrics::AbstractMetrics)
+    TrainParameters(opt::AbstractOptimiser, lossFunction::AbstractLoss, metrics::AbstractMetrics)
 
 This struct store the important parameters used to train the model.
 
