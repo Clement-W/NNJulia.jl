@@ -1,5 +1,4 @@
-include("../src/NNJulia.jl")
-using .NNJulia
+using NNJulia
 using Test
 
 include("TestAutodiff.jl")
