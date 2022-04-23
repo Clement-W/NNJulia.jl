@@ -53,4 +53,59 @@ To get a local copy up and running follow these simple example steps.
 
 ## Usage
 
-TODO
+### Create a model 
+
+```julia
+   model = Sequential(
+           Flatten(),
+           Dense(784, 16, relu),
+           Dense(16, 16, relu),
+           Dense(16, 10, softmax),
+       )
+  ```
+ 
+ ### Prepare for training
+ 
+ ```julia
+    # Initialise the optimiser, the loss function and the metrics used to compute accuracy
+   opt = GradientDescent(0.05)
+   loss = BinaryCrossentropy()
+   metrics = BinaryAccuracy()
+
+   # Pass it to the TrainParameters struct that will be used during training
+   trainParams = TrainParameters(opt, loss, metrics)
+
+   # Training specifications
+   batchsize = 64
+   nbEpochs = 25;
+   
+ ```
+ 
+ ### Load the data into a DataLoader
+ 
+ ```julia
+   trainData = DataLoader(train_x, train_y_hot, batchsize,shuffle=true);
+ ```
+ 
+ ### Train the model
+ 
+ ```julia
+ history = train!(model, trainParams, trainData, nbEpochs)
+ ```
+ 
+Plot the evolution of accuracy and loss during training:
+```julia
+p1 = plot(history["accuracy"],label="Accuracy",legend=:topleft)
+p2 = plot(history["loss"],label="Loss")
+plot(p1,p2,layout=2)
+```
+ 
+ ###  Evaluate the model
+ 
+ 
+ ```julia
+ acc = evaluate(model,metrics,test_x,test_y_hot)
+println("accuracy on test data = " * string(acc*100) * "%")
+```
+ 
+ 
