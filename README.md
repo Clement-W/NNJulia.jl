@@ -22,6 +22,35 @@ In the end the library NNJulia offers a simple programming interface to create a
 As you can see in examples/ it is possible to classify handwritten digits from the MNIST dataset with a decent accuracy. An example of spiral data points classification is also available.
 
 
-### Built With
+## Getting Started
 
-* [Julia 1..7.2](https://julialang.org/)
+To get a local copy up and running follow these simple example steps.
+
+### Prerequisites
+
+* [Julia 1.7](https://julialang.org/)
+
+### Installation
+
+
+1. Clone the repo and launch Julia
+   ```sh
+   git clone https://github.com/Clement-W/NNJulia.jl
+   cd NNJulia.jl
+   julia
+   ```
+   
+2. Instantiate the package
+ ```julia
+   julia> using Pkg
+   julia> Pkg.activate(".")
+   julia> Pkg.instantiate()
+   julia> using NNJulia
+   ```
+   
+3. Now you're ready to use NNJulia !
+
+
+## Usage
+
+TODO
