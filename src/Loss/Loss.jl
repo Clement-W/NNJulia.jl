@@ -66,7 +66,7 @@ function compute_loss(lossF::BinaryCrossentropy, predicted::Tensor, target::Unio
 end
 
 # Compute loss for CategoricalCrossentropy
-# FIXME: My implementation of CategoricalCrossentropy do not work 
+# FIXME: This implementation can create Nan values during training
 function compute_loss(lossF::CategoricalCrossentropy, predicted::Tensor, target::Union{Tensor,AbstractArray,Float64,Int64})
 
     clamp!(predicted.data, 1e-7, (1 - 1e-7))

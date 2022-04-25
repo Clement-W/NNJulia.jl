@@ -79,6 +79,9 @@ end
 Convert an array to one hot encoded format.
 """
 function to_one_hot(x::AbstractArray)
+    # unique(x)) .== permutedims(x) return a bitvector 
+    # sort will sort the vector so the data is ordered
+    # then, convert it to a int vector.
     return (Int).(sort(unique(x)) .== permutedims(x))
 end
 
