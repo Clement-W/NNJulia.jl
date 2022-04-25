@@ -60,8 +60,6 @@ function train!(model::AbstractModel, trainParams::TrainParameters, trainData::D
             #println(loss)
             #println(predictions)
 
-
-
             epochLoss += loss
 
             update!(trainParams.opt, model)

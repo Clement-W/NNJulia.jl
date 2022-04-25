@@ -1,7 +1,5 @@
 # Autodiff
 
-CurrentModule = NNJulia.Autodiff
-
 ## Structs and types
 
 ```@docs

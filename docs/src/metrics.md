@@ -1,7 +1,5 @@
 # Metrics
 
-CurrentModule = NNJulia.Metrics
-
 ```@docs
 AbstractMetrics
 Accuracy

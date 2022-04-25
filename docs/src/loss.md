@@ -1,7 +1,5 @@
 # Loss
 
-CurrentModule = NNJulia.Loss
-
 ## Loss functions
 
 ```@docs

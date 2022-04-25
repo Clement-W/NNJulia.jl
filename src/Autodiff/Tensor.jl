@@ -544,7 +544,7 @@ function Base.:broadcasted(::typeof(/), t1::Tensor, t2::Tensor)
     if (t1.requires_grad)
         # Function used to compute the gradient of t1 :
         gradientFunctionT1(incomingGradient::T) where {T<:Union{AbstractArray,Float64,Int64}} = handle_broadcasting!(t1, incomingGradient .* 1 ./ t2.data)
-        #d(t1/t2)/d(t2) = 1/t2, so we just need to multiply the incoming gradient by 1/t2
+        #d(t1/t2)/d(t1) = 1/t2, so we just need to multiply the incoming gradient by 1/t2
         push!(dependencies, TensorDependency(t1, gradientFunctionT1))
     end
 

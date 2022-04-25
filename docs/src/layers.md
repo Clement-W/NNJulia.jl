@@ -1,7 +1,5 @@
 # Layers
 
-CurrentModule = NNJulia.Layers
-
 ## Structs and types
 
 ```@docs

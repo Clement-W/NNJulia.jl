@@ -16,6 +16,14 @@ For example, if the input data contains two values for a batch size of 4, this m
         0 1 0 1
     ]
 
+# Fields 
+    - XData: The input data
+    - YData: The target output data
+    - batchSize: The size of the batches given to the network at eatch step
+    - indices: The list of indexes used to access the data. This list can be shuffled.
+    - shuffle: A boolean that indicates if the data needs to be shuffled
+    - nbBatch: The number of batch that compose the dataset 
+
 """
 struct DataLoader{T1<:Union{AbstractArray,Float64,Int64},T2<:Union{AbstractArray,Float64,Int64}}
     XData::T1

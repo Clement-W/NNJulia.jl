@@ -1,6 +1,10 @@
+module Utils
+
+export split_train_test, plot_decision_boundary, to_one_hot
+
 using Random
 using Plots
-using .Layers
+using ..Layers
 
 """
     split_train_test(xData::AbstractArray, yData::AbstractArray, at::Float64)
@@ -77,3 +81,6 @@ Convert an array to one hot encoded format.
 function to_one_hot(x::AbstractArray)
     return (Int).(sort(unique(x)) .== permutedims(x))
 end
+
+
+end# module
