@@ -22,6 +22,90 @@ In the end the library NNJulia offers a simple programming interface to create a
 As you can see in examples/ it is possible to classify handwritten digits from the MNIST dataset with a decent accuracy. An example of spiral data points classification is also available.
 
 
-### Built With
+## Getting Started
 
-* [Julia 1..7.2](https://julialang.org/)
+To get a local copy up and running follow these simple example steps.
+
+### Prerequisites
+
+* [Julia 1.7](https://julialang.org/)
+
+### Installation
+
+
+1. Clone the repo and launch Julia
+   ```sh
+   git clone https://github.com/Clement-W/NNJulia.jl
+   cd NNJulia.jl
+   julia
+   ```
+   
+2. Instantiate the package
+ ```julia
+   julia> using Pkg
+   julia> Pkg.activate(".")
+   julia> Pkg.instantiate()
+   julia> using NNJulia
+   ```
+   
+3. Now you're ready to use NNJulia !
+
+
+## Usage
+
+### Create a model 
+
+```julia
+   model = Sequential(
+           Flatten(),
+           Dense(784, 16, relu),
+           Dense(16, 16, relu),
+           Dense(16, 10, softmax),
+       )
+  ```
+ 
+ ### Prepare for training
+ 
+ ```julia
+    # Initialise the optimiser, the loss function and the metrics used to compute accuracy
+   opt = GradientDescent(0.05)
+   loss = BinaryCrossentropy()
+   metrics = BinaryAccuracy()
+
+   # Pass it to the TrainParameters struct that will be used during training
+   trainParams = TrainParameters(opt, loss, metrics)
+
+   # Training specifications
+   batchsize = 64
+   nbEpochs = 25;
+   
+ ```
+ 
+ ### Load the data into a DataLoader
+ 
+ ```julia
+   trainData = DataLoader(train_x, train_y_hot, batchsize,shuffle=true);
+ ```
+ 
+ ### Train the model
+ 
+ ```julia
+ history = train!(model, trainParams, trainData, nbEpochs)
+ ```
+ 
+Plot the evolution of accuracy and loss during training:
+```julia
+p1 = plot(history["accuracy"],label="Accuracy",legend=:topleft)
+p2 = plot(history["loss"],label="Loss")
+plot(p1,p2,layout=2)
+```
+ 
+ ###  Evaluate the model
+ 
+ 
+ ```julia
+ acc = evaluate(model,metrics,test_x,test_y_hot)
+println("accuracy on test data = " * string(acc*100) * "%")
+```
+ 
+ 
