@@ -34,19 +34,19 @@ To get a local copy up and running follow these simple example steps.
 
 
 1. Clone the repo and launch Julia
-   ```sh
-   git clone https://github.com/Clement-W/NNJulia.jl
-   cd NNJulia.jl
-   julia
-   ```
+```sh
+git clone https://github.com/Clement-W/NNJulia.jl
+cd NNJulia.jl
+julia
+```
    
 2. Instantiate the package
- ```julia
-   julia> using Pkg
-   julia> Pkg.activate(".")
-   julia> Pkg.instantiate()
-   julia> using NNJulia
-   ```
+```julia
+julia> using Pkg
+julia> Pkg.activate(".")
+julia> Pkg.instantiate()
+julia> using NNJulia
+```
    
 3. Now you're ready to use NNJulia !
 
@@ -56,35 +56,34 @@ To get a local copy up and running follow these simple example steps.
 ### Create a model 
 
 ```julia
-   model = Sequential(
-           Flatten(),
-           Dense(784, 16, relu),
-           Dense(16, 16, relu),
-           Dense(16, 10, softmax),
-       )
+model = Sequential(
+        Flatten(),
+        Dense(784, 16, relu),
+        Dense(16, 16, relu),
+        Dense(16, 10, softmax),
+    )
   ```
  
  ### Prepare for training
  
  ```julia
-    # Initialise the optimiser, the loss function and the metrics used to compute accuracy
-   opt = GradientDescent(0.05)
-   loss = BinaryCrossentropy()
-   metrics = BinaryAccuracy()
+# Initialise the optimiser, the loss function and the metrics used to compute accuracy
+opt = GradientDescent(0.05)
+loss = BinaryCrossentropy()
+metrics = BinaryAccuracy()
 
-   # Pass it to the TrainParameters struct that will be used during training
-   trainParams = TrainParameters(opt, loss, metrics)
+# Pass it to the TrainParameters struct that will be used during training
+trainParams = TrainParameters(opt, loss, metrics)
 
-   # Training specifications
-   batchsize = 64
-   nbEpochs = 25;
-   
+# Training specifications
+batchsize = 64
+nbEpochs = 25;
  ```
  
  ### Load the data into a DataLoader
  
  ```julia
-   trainData = DataLoader(train_x, train_y_hot, batchsize,shuffle=true);
+trainData = DataLoader(train_x, train_y_hot, batchsize,shuffle=true);
  ```
  
  ### Train the model
@@ -104,7 +103,7 @@ plot(p1,p2,layout=2)
  
  
  ```julia
- acc = evaluate(model,metrics,test_x,test_y_hot)
+acc = evaluate(model,metrics,test_x,test_y_hot)
 println("accuracy on test data = " * string(acc*100) * "%")
 ```
  
