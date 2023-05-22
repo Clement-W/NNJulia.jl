@@ -8,8 +8,7 @@
 
 ## About The Project
 
-Using famous deep learning libraries such as Keras or PyTorch is nice, but it's even better to understand how they work!
-That is why I have decided to implement a neural network library from scratch. This project is conducted for educational purposes and is not finished yet. 
+This project aims to develop a complete deep learning library from scratch. Conducted for educational purposes, this project helps me to better understand how famous libraries such as PyTorch are working, and how the learning algorithms are implemented at lower levels.
 
 The programming language used for this project is Julia. Julia is a recent programming language with a fast-growing community. It is made for scientific computation, and is famous for being faster than Python or Matlab. This open source programming language is dynamically typed and uses multiple dispatch as a paradigm. As Julia is designed for high performance, it makes it perfect for data science, machine learning and deep learning. When I started the project, I did not know anything about Julia, so it was also a good way to learn this language.
 
